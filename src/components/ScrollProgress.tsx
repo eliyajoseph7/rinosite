@@ -11,9 +11,9 @@ const ScrollProgress: React.FC = () => {
         style={{ width: `${scrollProgress}%` }}
       />
       {/* Debug: Show scroll progress value */}
-      <div className="absolute top-2 right-2 bg-black text-white text-xs px-2 py-1 rounded">
+      {/* <div className="absolute top-2 right-2 bg-black text-white text-xs px-2 py-1 rounded">
         {Math.round(scrollProgress)}%
-      </div>
+      </div> */}
     </div>
   );
 };
