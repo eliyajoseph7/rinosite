@@ -236,7 +236,7 @@ const HomePage: React.FC = () => {
               {/* Main Headline */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
                 <span className="block">Transform Your</span>
-                <span className="text-gradient block mt-2">Business Intelligence</span>
+                <span className="text-gradient block mt-2 pb-1.5">Business Intelligence</span>
               </h1>
 
               {/* Subheadline */}
