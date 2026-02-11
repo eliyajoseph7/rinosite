@@ -22,10 +22,36 @@ import {
   DevicePhoneMobileIcon as DevicePhoneMobileSolid,
   ComputerDesktopIcon as ComputerDesktopSolid
 } from '@heroicons/react/24/solid';
+import { useDownloadPlatforms } from '../hooks/useDownloadPlatforms';
 
 const DownloadPage: React.FC = () => {
   const [activePlatform, setActivePlatform] = useState('all');
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
+  const { data: downloadPlatforms, loading, error } = useDownloadPlatforms();
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading download options...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-red-600 mb-4">Failed to load download options</p>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const platformStats = [
     { value: '500K+', label: 'Downloads', icon: ArrowDownTrayIcon },
@@ -34,80 +60,22 @@ const DownloadPage: React.FC = () => {
     { value: '24/7', label: 'Support', icon: ClockIcon }
   ];
 
-  const downloadOptions = [
-    {
-      id: 'ios',
-      platform: 'iOS',
-      description: 'Download for iPhone and iPad',
-      version: '2.1.0',
-      size: '45.2 MB',
-      requirements: 'iOS 12.0 or later',
-      rating: 4.8,
-      reviews: '2,847',
-      color: 'from-blue-500 to-cyan-500',
-      gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
-      bg: 'bg-gradient-to-br from-blue-50 to-cyan-50',
-      icon: DevicePhoneMobileSolid,
-      storeLink: '#',
-      storeName: 'App Store',
-      features: ['Face ID/Touch ID', 'Apple Pay', 'Siri Shortcuts', 'Widget Support'],
-      deviceCount: '1.2M+ active devices'
-    },
-    {
-      id: 'android',
-      platform: 'Android',
-      description: 'Download for Android devices',
-      version: '2.1.0',
-      size: '52.1 MB',
-      requirements: 'Android 7.0 or later',
-      rating: 4.7,
-      reviews: '5,234',
-      color: 'from-green-500 to-emerald-500',
-      gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
-      bg: 'bg-gradient-to-br from-green-50 to-emerald-50',
-      icon: DevicePhoneMobileSolid,
-      storeLink: '#',
-      storeName: 'Google Play',
-      features: ['Fingerprint Auth', 'Google Pay', 'Dark Mode', 'Offline Mode'],
-      deviceCount: '2.5M+ active devices'
-    },
-    {
-      id: 'web',
-      platform: 'Web App',
-      description: 'Access from any web browser',
-      version: 'Always Latest',
-      size: 'No Download',
-      requirements: 'Modern web browser',
-      rating: 4.9,
-      reviews: '1,456',
-      color: 'from-purple-500 to-pink-500',
-      gradient: 'bg-gradient-to-r from-purple-600 to-pink-600',
-      bg: 'bg-gradient-to-br from-purple-50 to-pink-50',
-      icon: GlobeAltIcon,
-      storeLink: '#',
-      storeName: 'Launch Now',
-      features: ['PWA Support', 'Cross-browser', 'Instant Updates', 'No Installation'],
-      deviceCount: 'Unlimited access'
-    },
-    {
-      id: 'pwa',
-      platform: 'PWA',
-      description: 'Progressive Web App for all devices',
-      version: '2.1.0',
-      size: '125 MB',
-      requirements: 'Windows 10+, macOS 10.14+, Ubuntu 18.04+',
-      rating: 4.6,
-      reviews: '892',
-      color: 'from-orange-500 to-red-500',
-      gradient: 'bg-gradient-to-r from-orange-600 to-red-600',
-      bg: 'bg-gradient-to-br from-orange-50 to-red-50',
-      icon: ComputerDesktopSolid,
-      storeLink: '#',
-      storeName: 'Download',
-      features: ['Native Performance', 'System Tray', 'Keyboard Shortcuts', 'File Integration'],
-      deviceCount: '850K+ installs'
-    }
-  ];
+  // Icon mapping for API icon strings to React components
+  const iconMap: { [key: string]: any } = {
+    DevicePhoneMobileSolid,
+    ComputerDesktopSolid,
+    CloudArrowDownIcon,
+    GlobeAltIcon,
+  };
+
+  // Use only API data - no fallbacks
+  const apiDownloadOptions = downloadPlatforms.map(platform => ({
+    ...platform,
+    icon: iconMap[platform.icon] || DevicePhoneMobileSolid,
+  }));
+
+  const downloadOptions = apiDownloadOptions || [];
+      
 
   const platformFeatures = [
     { icon: ShieldCheckIcon, text: 'Complete offline functionality', highlight: '100% offline capable' },
@@ -195,7 +163,7 @@ const DownloadPage: React.FC = () => {
 
   const filteredPlatforms = activePlatform === 'all' 
     ? downloadOptions 
-    : downloadOptions.filter(platform => platform.id === activePlatform);
+    : downloadOptions.filter(platform => platform.slug === activePlatform);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20">
@@ -306,9 +274,9 @@ const DownloadPage: React.FC = () => {
               {downloadOptions.map((platform) => (
                 <button
                   key={platform.id}
-                  onClick={() => setActivePlatform(platform.id)}
+                  onClick={() => setActivePlatform(platform.id.toString())}
                   className={`flex items-center gap-3 px-6 py-3 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
-                    activePlatform === platform.id
+                    activePlatform === platform.id.toString()
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                   }`}
@@ -341,7 +309,7 @@ const DownloadPage: React.FC = () => {
                 <div 
                   key={platform.id}
                   className="group relative h-full"
-                  onMouseEnter={() => setHoveredPlatform(platform.id)}
+                  onMouseEnter={() => setHoveredPlatform(platform.id.toString())}
                   onMouseLeave={() => setHoveredPlatform(null)}
                 >
                   {/* Card Container */}
@@ -398,7 +366,7 @@ const DownloadPage: React.FC = () => {
                       </div>
                       
                       {/* Platform Features */}
-                      {hoveredPlatform === platform.id && (
+                      {hoveredPlatform === platform.id.toString() && (
                         <div className="mb-6 pt-4 border-t border-gray-200">
                           <div className="text-xs font-medium text-gray-700 mb-2">Platform Features:</div>
                           <div className="flex flex-wrap gap-1">

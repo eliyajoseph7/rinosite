@@ -28,133 +28,79 @@ import {
   StarIcon as StarSolid,
   CheckCircleIcon as CheckCircleSolid,
 } from '@heroicons/react/24/solid';
+import { useFeatureCategories } from '../hooks/useFeatureCategories';
 
 const FeaturesPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
+  const { data: featureCategories, loading, error } = useFeatureCategories();
 
-  const featureCategories = [
-    {
-      id: 'sales',
-      title: 'Sales & POS',
-      description: 'Complete point-of-sale system with AI-powered insights',
-      icon: ShoppingCartIcon,
-      color: 'from-purple-500 to-pink-500',
-      gradient: 'bg-gradient-to-r from-purple-600 to-pink-600',
-      bg: 'bg-gradient-to-br from-purple-50 to-pink-50',
-      stats: '↑ 40% avg. sales growth',
-      features: [
-        { name: 'Intuitive POS Interface', icon: CheckCircleSolid, description: 'Beautiful, easy-to-use interface for quick transactions' },
-        { name: 'AI-Powered Barcode Scanning', icon: CpuChipIcon, description: 'Instant product recognition with 99.9% accuracy' },
-        { name: 'Multi-Payment Processing', icon: CurrencyDollarIcon, description: 'Credit cards, mobile wallets, crypto & more' },
-        { name: 'Custom Receipt Designer', icon: DocumentTextIcon, description: 'Branded receipts with marketing messages' },
-        { name: 'Smart Tax Calculations', icon: ChartPieIcon, description: 'Automatic tax calculations for all regions' },
-        { name: 'Dynamic Discount Engine', icon: SparklesIcon, description: 'AI-powered discount recommendations' },
-        { name: 'Automated Returns', icon: ArrowsPointingOutIcon, description: 'Streamlined return & refund processing' },
-        { name: 'Sales Quotation Builder', icon: ClipboardDocumentListIcon, description: 'Professional quotes that convert' }
-      ]
-    },
-    {
-      id: 'inventory',
-      title: 'Inventory Management',
-      description: 'Real-time inventory control with predictive analytics',
-      icon: CogIcon,
-      color: 'from-blue-500 to-cyan-500',
-      gradient: 'bg-gradient-to-r from-blue-600 to-cyan-600',
-      bg: 'bg-gradient-to-br from-blue-50 to-cyan-50',
-      stats: '↓ 30% inventory costs',
-      features: [
-        { name: 'Real-time Stock Tracking', icon: ClockIcon, description: 'Live inventory updates across all locations' },
-        { name: 'Predictive Stock Alerts', icon: BellIcon, description: 'AI predicts stockouts before they happen' },
-        { name: 'Automated Reorder System', icon: RocketLaunchIcon, description: 'Smart reorder points with vendor integration' },
-        { name: 'Advanced Product Categorization', icon: ServerIcon, description: 'Intelligent product grouping & tagging' },
-        { name: 'Batch & Serial Tracking', icon: ClipboardDocumentListIcon, description: 'Complete traceability from source to sale' },
-        { name: 'Expiry Date Management', icon: ClockIcon, description: 'Automatic alerts for expiring products' },
-        { name: 'Stock Movement Analytics', icon: ChartBarIcon, description: 'Detailed insights into stock flow' },
-        { name: 'Multi-location Inventory Sync', icon: GlobeAltIcon, description: 'Seamless coordination across stores' }
-      ]
-    },
-    {
-      id: 'customers',
-      title: 'Customer Management',
-      description: 'Intelligent CRM with personalized engagement',
-      icon: UsersIcon,
-      color: 'from-green-500 to-emerald-500',
-      gradient: 'bg-gradient-to-r from-green-600 to-emerald-600',
-      bg: 'bg-gradient-to-br from-green-50 to-emerald-50',
-      stats: '↑ 50% retention rate',
-      features: [
-        { name: '360° Customer Profiles', icon: UsersIcon, description: 'Complete customer history & preferences' },
-        { name: 'Smart Purchase History', icon: ChartBarIcon, description: 'AI-powered purchase pattern analysis' },
-        { name: 'Automated Loyalty Programs', icon: StarSolid, description: 'Customizable rewards & points system' },
-        { name: 'Customer Segmentation', icon: CpuChipIcon, description: 'AI-driven customer grouping' },
-        { name: 'Omnichannel Communication', icon: ChatBubbleLeftRightIcon, description: 'Email, SMS, WhatsApp integration' },
-        { name: 'Automated Birthday Offers', icon: SparklesIcon, description: 'Personalized offers on special days' },
-        { name: 'Credit Management System', icon: CurrencyDollarIcon, description: 'Flexible credit terms & tracking' },
-        { name: 'Customer Lifetime Value Analytics', icon: ChartPieIcon, description: 'Predict future customer value' }
-      ]
-    },
-    {
-      id: 'analytics',
-      title: 'Reports & Analytics',
-      description: 'AI-powered insights for data-driven decisions',
-      icon: ChartBarIcon,
-      color: 'from-orange-500 to-red-500',
-      gradient: 'bg-gradient-to-r from-orange-600 to-red-600',
-      bg: 'bg-gradient-to-br from-orange-50 to-red-50',
-      stats: '50+ report types',
-      features: [
-        { name: 'Real-time Sales Dashboards', icon: ClockIcon, description: 'Live sales data with trend analysis' },
-        { name: 'Inventory Analytics Suite', icon: ServerIcon, description: 'Deep insights into stock performance' },
-        { name: 'Customer Behavior Analytics', icon: UsersIcon, description: 'Understand buying patterns & preferences' },
-        { name: 'Profit & Loss Statements', icon: CurrencyDollarIcon, description: 'Automated financial reporting' },
-        { name: 'Cash Flow Forecasting', icon: ChartBarIcon, description: 'Predict future cash requirements' },
-        { name: 'Product Performance Reports', icon: ShoppingCartIcon, description: 'Identify best & worst performers' },
-        { name: 'Custom Dashboard Builder', icon: CogIcon, description: 'Drag-and-drop dashboard creation' },
-        { name: 'Automated Report Export', icon: DocumentTextIcon, description: 'Export to PDF, Excel, or email' }
-      ]
-    },
-    {
-      id: 'finance',
-      title: 'Financial Management',
-      description: 'Complete financial control and intelligent forecasting',
-      icon: CurrencyDollarIcon,
-      color: 'from-yellow-500 to-amber-500',
-      gradient: 'bg-gradient-to-r from-yellow-600 to-amber-600',
-      bg: 'bg-gradient-to-br from-yellow-50 to-amber-50',
-      stats: '↓ 25% operational costs',
-      features: [
-        { name: 'Automated Expense Tracking', icon: DocumentTextIcon, description: 'Receipt scanning & categorization' },
-        { name: 'Smart Invoice Generation', icon: DocumentTextIcon, description: 'Professional invoices with auto-followup' },
-        { name: 'Payment Automation', icon: CurrencyDollarIcon, description: 'Automated payment reminders & processing' },
-        { name: 'Tax Compliance Suite', icon: ShieldCheckIcon, description: 'Automated tax calculations & filing' },
-        { name: 'Budget Planning Tools', icon: ChartPieIcon, description: 'Interactive budget creation & tracking' },
-        { name: 'AI Financial Forecasting', icon: CpuChipIcon, description: 'Predict future revenue & expenses' },
-        { name: 'Multi-currency Support', icon: GlobeAltIcon, description: '130+ currencies with live rates' },
-        { name: 'Bank Reconciliation', icon: ArrowsPointingOutIcon, description: 'Automatic bank statement matching' }
-      ]
-    },
-    {
-      id: 'supply',
-      title: 'Supply Chain',
-      description: 'Intelligent supplier management and automation',
-      icon: TruckIcon,
-      color: 'from-indigo-500 to-purple-500',
-      gradient: 'bg-gradient-to-r from-indigo-600 to-purple-600',
-      bg: 'bg-gradient-to-br from-indigo-50 to-purple-50',
-      stats: '↑ 35% efficiency',
-      features: [
-        { name: 'Supplier Relationship Management', icon: UsersIcon, description: 'Complete supplier profiles & history' },
-        { name: 'Automated Purchase Orders', icon: DocumentTextIcon, description: 'AI-generated purchase suggestions' },
-        { name: 'Intelligent Receiving', icon: TruckIcon, description: 'Barcode scanning for instant receiving' },
-        { name: 'Vendor Performance Analytics', icon: ChartBarIcon, description: 'Scorecards & performance tracking' },
-        { name: 'Cost Optimization Tools', icon: CurrencyDollarIcon, description: 'Identify savings opportunities' },
-        { name: 'Quality Control System', icon: ShieldCheckIcon, description: 'Standardized quality checks' },
-        { name: 'Delivery Schedule Optimization', icon: ClockIcon, description: 'Smart routing & scheduling' },
-        { name: 'Contract Management', icon: DocumentTextIcon, description: 'Digital contract storage & alerts' }
-      ]
-    }
-  ];
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading features...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-red-600 mb-4">Failed to load features</p>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Icon mapping for API icon strings to React components
+  const iconMap: { [key: string]: any } = {
+    ShoppingCartIcon,
+    ChartBarIcon,
+    UsersIcon,
+    CogIcon,
+    DocumentTextIcon,
+    CurrencyDollarIcon,
+    TruckIcon,
+    ClipboardDocumentListIcon,
+    BellIcon,
+    ShieldCheckIcon,
+    CloudIcon,
+    DevicePhoneMobileIcon,
+    ArrowRightIcon,
+    SparklesIcon,
+    RocketLaunchIcon,
+    CpuChipIcon,
+    ArrowsPointingOutIcon,
+    ClockIcon,
+    CheckCircleIcon,
+    ChartPieIcon,
+    ServerIcon,
+    GlobeAltIcon,
+    ChatBubbleLeftRightIcon,
+    StarIcon: StarSolid,
+    CheckCircleSolid,
+  };
+
+  // Use only API data - no fallbacks
+  const apiFeatureCategories = featureCategories.map(category => ({
+    ...category,
+    icon: iconMap[category.icon] || CogIcon,
+    features: category.features.map(feature => ({
+      ...feature,
+      icon: iconMap[feature.icon] || CheckCircleSolid,
+    }))
+  }));
+
+  const filteredCategories = activeCategory === 'all' 
+    ? apiFeatureCategories 
+    : apiFeatureCategories.filter(cat => cat.id.toString() === activeCategory);
 
   const additionalFeatures = [
     {
@@ -214,10 +160,6 @@ const FeaturesPage: React.FC = () => {
     { feature: 'API Access', rino: true, competitorA: false, competitorB: true },
     { feature: 'Custom Integrations', rino: true, competitorA: false, competitorB: false }
   ];
-
-  const filteredCategories = activeCategory === 'all' 
-    ? featureCategories 
-    : featureCategories.filter(cat => cat.id === activeCategory);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20">
@@ -305,7 +247,7 @@ const FeaturesPage: React.FC = () => {
       <section className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-gray-200 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
-            <div className="flex gap-3 overflow-x-auto pb-2 flex-1">
+            <div className="flex flex-wrap gap-3 overflow-x-auto pb-2 flex-1">
               <button
                 onClick={() => setActiveCategory('all')}
                 className={`px-6 py-3 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
@@ -316,12 +258,12 @@ const FeaturesPage: React.FC = () => {
               >
                 All Features
               </button>
-              {featureCategories.map((category) => (
+              {apiFeatureCategories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setActiveCategory(category.id)}
+                  onClick={() => setActiveCategory(category.id.toString())}
                   className={`flex items-center gap-3 px-6 py-3 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
-                    activeCategory === category.id
+                    activeCategory === category.id.toString()
                       ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                   }`}
@@ -408,7 +350,7 @@ const FeaturesPage: React.FC = () => {
                             {/* Enhanced Icon */}
                             <div className={`relative flex items-center justify-center w-12 h-12 rounded-xl transition-all duration-300 ${
                               hoveredFeature === uniqueId 
-                                ? `bg-gradient-to-r ${category.color} shadow-lg` 
+                                ? `bg-gradient-to-r from-teal-500 to-blue-500 shadow-lg` 
                                 : 'bg-gray-100'
                             }`}>
                               <FeatureIcon className={`w-6 h-6 transition-colors duration-300 ${

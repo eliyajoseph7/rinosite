@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useHomepageData } from '../hooks/useHomepageData';
 import { 
   ArrowTrendingUpIcon,
   ChartBarIcon,
@@ -29,6 +30,7 @@ import {
 const HomePage: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [, setScrollY] = useState(0);
+  const { data: homepageData, loading, error } = useHomepageData();
 
   useEffect(() => {
     setIsVisible(true);
@@ -37,90 +39,81 @@ const HomePage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const features = [
-    {
-      icon: ShoppingCartIcon,
-      title: 'Sales Management',
-      description: 'Complete point-of-sale system with inventory tracking, receipt generation, and sales analytics.',
-      color: 'from-primary-500 to-primary-600',
-      bgColor: 'from-primary-50 to-primary-100',
-      gradient: 'bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500',
-      stats: '30% avg. sales increase'
-    },
-    {
-      icon: ChartBarIcon,
-      title: 'Advanced Analytics',
-      description: 'AI-powered insights and predictive analytics for data-driven business decisions.',
-      color: 'from-accent-500 to-accent-600',
-      bgColor: 'from-accent-50 to-accent-100',
-      gradient: 'bg-gradient-to-r from-accent-600 via-accent-500 to-primary-500',
-      stats: '50+ report types'
-    },
-    {
-      icon: UsersIcon,
-      title: 'Customer Management',
-      description: 'Intelligent CRM with automated segmentation and personalized marketing automation.',
-      color: 'from-emerald-500 to-teal-500',
-      bgColor: 'from-emerald-50 to-teal-50',
-      gradient: 'bg-gradient-to-r from-emerald-600 via-teal-500 to-primary-500',
-      stats: '45% customer retention'
-    },
-    {
-      icon: CogIcon,
-      title: 'Inventory Control',
-      description: 'Real-time inventory tracking with AI-powered predictions and automated reordering.',
-      color: 'from-cyan-500 to-blue-500',
-      bgColor: 'from-cyan-50 to-blue-50',
-      gradient: 'bg-gradient-to-r from-cyan-600 via-blue-500 to-primary-500',
-      stats: '25% cost reduction'
-    }
-  ];
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading amazing content...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const benefits = [
-    { text: 'Increase sales by up to 30%', icon: ArrowTrendingUpSolid },
-    { text: 'Reduce inventory costs by 25%', icon: CurrencyDollarIcon },
-    { text: 'Save 15+ hours per week', icon: ClockIcon },
-    { text: 'Improve customer satisfaction', icon: StarSolid },
-    { text: 'Real-time business insights', icon: ChartPieIcon },
-    { text: 'Multi-platform accessibility', icon: ArrowsPointingOutIcon }
-  ];
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Oops! Something went wrong</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Retail Store Owner',
-      company: 'Fashion Forward Boutique',
-      content: 'Rino transformed my business operations. Sales tracking is now effortless, and I have complete visibility into my inventory.',
-      rating: 5,
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=400&h=400&fit=crop&crop=face',
-      stats: 'Revenue ↑ 42%'
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Restaurant Manager',
-      company: 'Urban Bistro',
-      content: 'The analytics features helped us identify our best-selling items and optimize our menu. Revenue increased by 35% in just 3 months.',
-      rating: 5,
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face',
-      stats: 'Costs ↓ 28%'
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Boutique Owner',
-      company: 'The Style Collective',
-      content: 'Customer management has never been easier. I can track purchase history and send personalized offers that actually work.',
-      rating: 5,
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=face',
-      stats: 'Retention ↑ 56%'
-    }
-  ];
+  // Icon mapping for features from API
+  const iconMap: { [key: string]: any } = {
+    ShoppingCartIcon,
+    ChartBarIcon,
+    UsersIcon,
+    CogIcon,
+  };
 
-  const metrics = [
-    { value: '10,000+', label: 'Businesses Trust Us', icon: UsersIcon },
-    { value: '99.9%', label: 'Uptime Guarantee', icon: ShieldCheckIcon },
-    { value: '24/7', label: 'Support Available', icon: ClockIcon },
-    { value: '40%', label: 'Avg. Growth', icon: ArrowTrendingUpSolid }
-  ];
+  // Use only API data - no fallbacks
+  const features = (homepageData.features && homepageData.features.length > 0) ? homepageData.features.map(feature => ({
+    icon: iconMap[feature.icon] || ShoppingCartIcon,
+    title: feature.title,
+    description: feature.description,
+    color: feature.color || 'from-primary-500 to-primary-600',
+    bgColor: feature.bg_color || 'from-primary-50 to-primary-100',
+    gradient: feature.gradient || 'bg-gradient-to-r from-primary-600 via-primary-500 to-accent-500',
+    stats: feature.stats
+  })) : [];
+
+  // Icon mapping for benefits and metrics
+  const benefitIconMap: { [key: string]: any } = {
+    ArrowTrendingUpSolid,
+    CurrencyDollarIcon,
+    ClockIcon,
+    StarSolid,
+    ChartPieIcon,
+    ArrowsPointingOutIcon,
+  };
+
+  // Use only API data - no fallbacks
+  const benefits = (homepageData.benefits && homepageData.benefits.length > 0) ? homepageData.benefits.map(benefit => ({
+    text: benefit.text,
+    icon: benefitIconMap[benefit.icon] || ArrowTrendingUpSolid
+  })) : [];
+
+  // Use only API data - no fallbacks
+  const testimonials = (homepageData.testimonials && homepageData.testimonials.length > 0) ? homepageData.testimonials : [];
+
+  // Use only API data - no fallbacks
+  const metrics = (homepageData.metrics && homepageData.metrics.length > 0) ? homepageData.metrics.map(metric => ({
+    value: metric.value,
+    label: metric.label,
+    icon: iconMap[metric.icon] || UsersIcon
+  })) : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20">
@@ -224,7 +217,9 @@ const HomePage: React.FC = () => {
               <div className="inline-flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-full px-6 py-3 mb-8 border border-primary-200/50 shadow-lg">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-gray-800 font-medium">Trusted by 10,000+ businesses</span>
+                  <span className="text-gray-800 font-medium">
+                    {homepageData.hero?.trust_badge_text}
+                  </span>
                 </div>
                 <div className="flex">
                   {[...Array(5)].map((_, i) => (
@@ -235,39 +230,46 @@ const HomePage: React.FC = () => {
 
               {/* Main Headline */}
               <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-                <span className="block">Transform Your</span>
-                <span className="text-gradient block mt-2 pb-1.5">Business Intelligence</span>
+                {homepageData.hero && (
+                  <>
+                    <span className="block">{homepageData.hero.title}</span>
+                    <span className="text-gradient block mt-2 pb-1.5">{homepageData.hero.subtitle}</span>
+                  </>
+                )}
               </h1>
 
               {/* Subheadline */}
               <p className="text-xl text-gray-600 mb-12 max-w-2xl leading-relaxed">
-                The most powerful <span className="font-semibold text-primary-700">AI-driven business suite</span> designed for modern enterprises. 
-                Streamline operations, boost productivity, and accelerate growth with intelligent automation.
+                {homepageData.hero?.description}
               </p>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-6 mb-12">
-                <Link
-                  to="/download"
-                  className="group relative overflow-hidden rounded-2xl"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold text-lg px-10 py-5 rounded-2xl flex items-center justify-center gap-3 hover:scale-105 transition-all duration-300 hover:from-primary-600 hover:to-primary-700 shadow-lg hover:shadow-xl">
-                    <SparklesIcon className="w-6 h-6" />
-                    Start Free Trial
-                    <CloudArrowUpIcon className="w-5 h-5 ml-2" />
-                  </div>
-                </Link>
+                {homepageData.hero && (
+                  <Link
+                    to={homepageData.hero.cta_primary_link}
+                    className="group relative overflow-hidden rounded-2xl"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="relative bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold text-lg px-10 py-5 rounded-2xl flex items-center justify-center gap-3 hover:scale-105 transition-all duration-300 hover:from-primary-600 hover:to-primary-700 shadow-lg hover:shadow-xl">
+                      <SparklesIcon className="w-6 h-6" />
+                      {homepageData.hero.cta_primary_text}
+                      <CloudArrowUpIcon className="w-5 h-5 ml-2" />
+                    </div>
+                  </Link>
+                )}
                 
-                <Link
-                  to="/video/1"
-                  className="group relative bg-transparent text-gray-700 font-bold text-lg px-10 py-5 rounded-2xl flex items-center justify-center gap-3 border-2 border-primary-300 hover:border-primary-500 transition-all duration-300 hover:scale-105"
-                >
-                  <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <PlayIcon className="w-5 h-5 text-white ml-1" />
-                  </div>
-                  Watch Demo
-                </Link>
+                {homepageData.hero && (
+                  <Link
+                    to={homepageData.hero.cta_secondary_link}
+                    className="group relative bg-transparent text-gray-700 font-bold text-lg px-10 py-5 rounded-2xl flex items-center justify-center gap-3 border-2 border-primary-300 hover:border-primary-500 transition-all duration-300 hover:scale-105"
+                  >
+                    <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <PlayIcon className="w-5 h-5 text-white ml-1" />
+                    </div>
+                    {homepageData.hero.cta_secondary_text}
+                  </Link>
+                )}
               </div>
 
               {/* Key Features */}
@@ -563,15 +565,12 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              { title: 'Getting Started', duration: '5 min', thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop', level: 'Beginner', icon: '🚀' },
-              { title: 'Sales Management', duration: '8 min', thumbnail: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=250&fit=crop', level: 'Intermediate', icon: '💰' },
-              { title: 'Inventory Control', duration: '6 min', thumbnail: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=400&h=250&fit=crop', level: 'Beginner', icon: '📦' },
-              { title: 'Customer Management', duration: '7 min', thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=250&fit=crop', level: 'Intermediate', icon: '👥' },
-              { title: 'Reports & Analytics', duration: '10 min', thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop', level: 'Advanced', icon: '📊' },
-              { title: 'Advanced Features', duration: '12 min', thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop', level: 'Advanced', icon: '⚡' }
-            ].map((video, index) => (
-              <div key={index} className="glass-card group cursor-pointer hover:scale-105 transition-all duration-500 overflow-hidden">
+            {(homepageData.videos && homepageData.videos.length > 0) && homepageData.videos.map((video, index) => (
+              <Link 
+                key={index} 
+                to={`/video/${video.id}`}
+                className="glass-card group cursor-pointer hover:scale-105 transition-all duration-500 overflow-hidden block"
+              >
                 <div className="relative overflow-hidden">
                   <img src={video.thumbnail} alt={video.title} className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-110" />
                   
@@ -608,7 +607,7 @@ const HomePage: React.FC = () => {
                     Master {video.title.toLowerCase()} with our comprehensive step-by-step tutorial designed to help you succeed.
                   </p>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
           
@@ -622,14 +621,11 @@ const HomePage: React.FC = () => {
                 Join thousands of users who have transformed their business with our comprehensive video tutorials.
               </p>
               <div className="flex items-center justify-center space-x-4">
-                <Link to="/success" className="btn-primary px-8 py-3">
+                <Link to="/videos" className="btn-primary px-8 py-3">
                   <div className="flex items-center space-x-2">
                     <ArrowTrendingUpIcon className="h-5 w-5" />
-                    <span>Start Your Success</span>
+                    <span>View All Videos</span>
                   </div>
-                </Link>
-                <Link to="/videos" className="px-8 py-3 border-2 border-primary-200 text-primary-700 rounded-xl font-semibold hover:bg-primary-50 transition-colors">
-                  View All Videos
                 </Link>
               </div>
             </div>

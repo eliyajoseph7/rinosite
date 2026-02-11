@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bars3Icon, XMarkIcon, SparklesIcon, HomeIcon, CogIcon, CreditCardIcon, QuestionMarkCircleIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, SparklesIcon, HomeIcon, CogIcon, CreditCardIcon, QuestionMarkCircleIcon, ArrowDownTrayIcon, PlayIcon } from '@heroicons/react/24/outline';
 import logo from '../assets/logo/light.png';
 
 const Header: React.FC = () => {
@@ -10,6 +10,7 @@ const Header: React.FC = () => {
 
   const navigation = [
     { name: 'Home', href: '/', icon: HomeIcon },
+    { name: 'Videos', href: '/videos', icon: PlayIcon },
     { name: 'Features', href: '/features', icon: CogIcon },
     { name: 'Pricing', href: '/pricing', icon: CreditCardIcon },
     { name: 'Support', href: '/support', icon: QuestionMarkCircleIcon },

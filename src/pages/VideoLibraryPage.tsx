@@ -1,5 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
+import { useVideos } from '../hooks/useVideos';
+import { useVideoStats } from '../hooks/useVideoStats';
+import { useVideoGroups } from '../hooks/useVideoGroups';
 import { 
   PlayIcon, 
   MagnifyingGlassIcon, 
@@ -27,286 +30,107 @@ import {
 
 const VideoLibraryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGroup, setSelectedGroup] = useState('all');
+  const [selectedGroup, setSelectedGroup] = useState('__all_videos__');
   const [viewMode, setViewMode] = useState<'grid' | 'masonry' | 'spotlight'>('masonry');
   const [hoveredVideo, setHoveredVideo] = useState<number | null>(null);
 
-  const categoryGroups = [
-    { 
-      id: 'all', 
-      name: 'All Videos', 
+  // Fetch data from API - ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
+  const { data: videoGroups, loading: groupsLoading, error: groupsError } = useVideoGroups();
+  const { 
+    data: videos, 
+    pagination, 
+    loading: videosLoading, 
+    error: videosError, 
+    loadMore, 
+    goToPage 
+  } = useVideos({ 
+    group: selectedGroup === '__all_videos__' ? undefined : selectedGroup,
+    search: searchTerm || undefined,
+    per_page: 12
+  });
+  const { data: videoStats, loading: statsLoading, error: statsError } = useVideoStats();
+
+  // Create icon mapping for API data
+  const iconMap: { [key: string]: any } = useMemo(() => ({
+    SparklesIcon,
+    StarIcon,
+    ChartBarIcon,
+    CogIcon,
+    TrophyIcon,
+    FireIcon,
+    UsersIcon,
+    ClockIcon,
+    BookOpenIcon,
+    AcademicCapIcon,
+    LightBulbIcon,
+    ChatBubbleLeftRightIcon,
+    ArrowTrendingUpIcon,
+    EyeIcon,
+    PlayIcon
+  }), []);
+
+  // Process video groups from API with icon mapping
+  const processedVideoGroups = useMemo(() => {
+    if (!videoGroups || videoGroups.length === 0) return [];
+    
+    return videoGroups.map(group => ({
+      ...group,
+      icon: iconMap[group.icon] || SparklesIcon,
+    }));
+  }, [videoGroups, iconMap]);
+
+  const categoryGroups = useMemo(() => [
+    {
+      id: '__all_videos__',
+      name: 'All Videos',
       icon: SparklesIcon,
       color: 'from-purple-500 to-pink-500',
       gradient: 'bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500',
-      description: 'Complete collection of demos and success stories',
-      count: 24,
+      description: 'Complete collection of Rino app instructional videos',
+      count: videos.length,
       bg: 'bg-gradient-to-br from-purple-50 to-pink-50'
     },
-    { 
-      id: 'essentials', 
-      name: 'Essentials', 
-      icon: StarIcon,
-      color: 'from-yellow-500 to-orange-500',
-      gradient: 'bg-gradient-to-r from-yellow-600 via-orange-500 to-red-500',
-      description: 'Must-watch videos for getting started',
-      count: 6,
-      bg: 'bg-gradient-to-br from-yellow-50 to-orange-50'
-    },
-    { 
-      id: 'growth', 
-      name: 'Growth Hacks', 
-      icon: ChartBarIcon,
-      color: 'from-green-500 to-emerald-500',
-      gradient: 'bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500',
-      description: 'Strategies to scale your business',
-      count: 8,
-      bg: 'bg-gradient-to-br from-green-50 to-emerald-50'
-    },
-    { 
-      id: 'operations', 
-      name: 'Operations', 
-      icon: CogIcon,
-      color: 'from-blue-500 to-cyan-500',
-      gradient: 'bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500',
-      description: 'Streamline your daily operations',
-      count: 6,
-      bg: 'bg-gradient-to-br from-blue-50 to-cyan-50'
-    },
-    { 
-      id: 'success', 
-      name: 'Success Stories', 
-      icon: TrophyIcon,
-      color: 'from-indigo-500 to-purple-500',
-      gradient: 'bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500',
-      description: 'Real customer success stories',
-      count: 4,
-      bg: 'bg-gradient-to-br from-indigo-50 to-purple-50'
-    }
-  ];
+    ...processedVideoGroups
+  ], [videos.length, processedVideoGroups]);
 
-  const allVideos = [
-    // Essentials
-    { 
-      id: 1, 
-      title: 'Rino Platform Masterclass', 
-      duration: '5 min', 
-      category: 'essentials',
-      group: 'essentials',
-      thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop',
-      description: 'See how Rino transforms your business operations in minutes with AI-powered insights',
-      icon: '🚀',
-      views: '12.5K',
-      likes: '1.2K',
-      featured: true,
-      rating: 4.9,
-      progress: 85,
-      level: 'Beginner',
-      instructor: 'Alex Johnson',
-      instructorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 2, 
-      title: 'Business Dashboard Deep Dive', 
-      duration: '8 min', 
-      category: 'essentials',
-      group: 'essentials',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop',
-      description: 'Your command center for real-time business insights and decision making',
-      icon: '📊',
-      views: '8.2K',
-      likes: '845',
-      featured: true,
-      rating: 4.8,
-      progress: 60,
-      level: 'Intermediate',
-      instructor: 'Sarah Miller',
-      instructorAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 3, 
-      title: 'Quick Start & Setup Guide', 
-      duration: '3 min', 
-      category: 'essentials',
-      group: 'essentials',
-      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=500&fit=crop',
-      description: 'Get up and running in under 5 minutes with step-by-step instructions',
-      icon: '⚡',
-      views: '15.3K',
-      likes: '2.1K',
-      featured: false,
-      rating: 4.7,
-      progress: 100,
-      level: 'Beginner',
-      instructor: 'Mike Chen',
-      instructorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    },
-    // Growth Hacks
-    { 
-      id: 4, 
-      title: 'Boost Sales by 40% in 30 Days', 
-      duration: '8 min', 
-      category: 'sales',
-      group: 'growth',
-      thumbnail: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=500&fit=crop',
-      description: 'How our clients increased revenue using advanced Rino sales automation',
-      icon: '💰',
-      views: '6.7K',
-      likes: '932',
-      featured: true,
-      rating: 4.9,
-      progress: 45,
-      level: 'Advanced',
-      instructor: 'Emily Davis',
-      instructorAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 5, 
-      title: 'Sales Pipeline Automation Pro', 
-      duration: '6 min', 
-      category: 'sales',
-      group: 'growth',
-      thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop',
-      description: 'Close deals faster with intelligent automated sales workflows',
-      icon: '📝',
-      views: '5.1K',
-      likes: '623',
-      featured: false,
-      rating: 4.6,
-      progress: 30,
-      level: 'Intermediate',
-      instructor: 'David Wilson',
-      instructorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 6, 
-      title: 'Customer Retention Secrets Revealed', 
-      duration: '7 min', 
-      category: 'customers',
-      group: 'growth',
-      thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop',
-      description: 'Increase customer lifetime value by 50% with proven strategies',
-      icon: '👥',
-      views: '9.2K',
-      likes: '1.1K',
-      featured: true,
-      rating: 4.8,
-      progress: 75,
-      level: 'Intermediate',
-      instructor: 'Lisa Brown',
-      instructorAvatar: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 7, 
-      title: 'Smart Customer Segmentation Mastery', 
-      duration: '5 min', 
-      category: 'customers',
-      group: 'growth',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop',
-      description: 'Target the right customers with precision marketing automation',
-      icon: '🎯',
-      views: '3.6K',
-      likes: '421',
-      featured: false,
-      rating: 4.5,
-      progress: 20,
-      level: 'Advanced',
-      instructor: 'Robert Taylor',
-      instructorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face'
-    },
-    // Operations
-    { 
-      id: 8, 
-      title: 'Inventory Optimization Pro Tips', 
-      duration: '6 min', 
-      category: 'inventory',
-      group: 'operations',
-      thumbnail: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=500&fit=crop',
-      description: 'Cut inventory costs by 30% with AI-powered smart management',
-      icon: '📦',
-      views: '7.3K',
-      likes: '856',
-      featured: true,
-      rating: 4.7,
-      progress: 90,
-      level: 'Intermediate',
-      instructor: 'James Wilson',
-      instructorAvatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 9, 
-      title: 'Real-time Stock Tracking Masterclass', 
-      duration: '7 min', 
-      category: 'inventory',
-      group: 'operations',
-      thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop',
-      description: 'Never lose a sale due to stockouts with predictive analytics',
-      icon: '📈',
-      views: '4.8K',
-      likes: '512',
-      featured: false,
-      rating: 4.6,
-      progress: 40,
-      level: 'Beginner',
-      instructor: 'Maria Garcia',
-      instructorAvatar: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=100&h=100&fit=crop&crop=face'
-    },
-    // Success Stories
-    { 
-      id: 10, 
-      title: 'Fashion Boutique: 42% Growth Story', 
-      duration: '10 min', 
-      category: 'success',
-      group: 'success',
-      thumbnail: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&h=500&fit=crop',
-      description: 'How Sarah transformed her boutique with Rino in just 3 months',
-      icon: '🏪',
-      views: '11.2K',
-      likes: '1.5K',
-      featured: true,
-      rating: 4.9,
-      progress: 100,
-      level: 'All Levels',
-      instructor: 'Sarah Johnson',
-      instructorAvatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face'
-    },
-    { 
-      id: 11, 
-      title: 'Restaurant Revolution: 35% Revenue Boost', 
-      duration: '8 min', 
-      category: 'success',
-      group: 'success',
-      thumbnail: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=500&fit=crop',
-      description: 'Michael streamlined operations and grew revenue dramatically',
-      icon: '🍽️',
-      views: '8.9K',
-      likes: '987',
-      featured: true,
-      rating: 4.8,
-      progress: 100,
-      level: 'All Levels',
-      instructor: 'Michael Chen',
-      instructorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-    }
-  ];
+  // Since filtering is now handled by the backend API, we use videos directly
+  const filteredVideos = videos;
 
-  const filteredVideos = useMemo(() => {
-    return allVideos.filter(video => {
-      const matchesSearch = video.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           video.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesGroup = selectedGroup === 'all' || video.group === selectedGroup;
-      return matchesSearch && matchesGroup;
-    });
-  }, [searchTerm, selectedGroup]);
+  const featuredVideos = useMemo(() => filteredVideos.filter(v => v.featured).slice(0, 3), [filteredVideos]);
+  const regularVideos = useMemo(() => filteredVideos.filter(v => !v.featured), [filteredVideos]);
 
-  const featuredVideos = filteredVideos.filter(v => v.featured).slice(0, 3);
-  const regularVideos = filteredVideos.filter(v => !v.featured);
+  // Create learning stats from API data
+  const learningStats = useMemo(() => videoStats ? [
+    { value: videoStats.total_videos.toString(), label: 'Courses', icon: BookOpenIcon, color: 'text-purple-600', bg: 'bg-purple-100' },
+    { value: videoStats.total_views, label: 'Learners', icon: UsersIcon, color: 'text-pink-600', bg: 'bg-pink-100' },
+    { value: videoStats.avg_rating.toString(), label: 'Avg Rating', icon: StarSolid, color: 'text-yellow-600', bg: 'bg-yellow-100' },
+    { value: videoStats.satisfaction, label: 'Satisfaction', icon: HeartSolid, color: 'text-red-600', bg: 'bg-red-100' }
+  ] : [], [videoStats]);
 
-  const learningStats = [
-    { value: '24', label: 'Courses', icon: BookOpenIcon, color: 'text-purple-600', bg: 'bg-purple-100' },
-    { value: '50K+', label: 'Learners', icon: UsersIcon, color: 'text-pink-600', bg: 'bg-pink-100' },
-    { value: '4.8', label: 'Avg Rating', icon: StarSolid, color: 'text-yellow-600', bg: 'bg-yellow-100' },
-    { value: '98%', label: 'Satisfaction', icon: HeartSolid, color: 'text-red-600', bg: 'bg-red-100' }
-  ];
+  // Show loading state
+  if (groupsLoading || videosLoading || statsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-purple-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading video library...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (groupsError || videosError || statsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-purple-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-red-600 mb-4">Failed to load video library</p>
+          <p className="text-gray-600">{groupsError || videosError || statsError}</p>
+        </div>
+      </div>
+    );
+  }
+
 
   const renderVideoCard = (video: any, size: 'normal' | 'large' | 'small' = 'normal') => {
     const sizeClasses = {
@@ -336,7 +160,7 @@ const VideoLibraryPage: React.FC = () => {
           {/* Thumbnail Container */}
           <div className="relative overflow-hidden">
             <img 
-              src={video.thumbnail} 
+              src={video.thumbnail || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop&auto=format`} 
               alt={video.title} 
               className={`w-full ${heightClasses[size]} object-cover transition-transform duration-700 group-hover:scale-110`} 
             />
@@ -365,9 +189,6 @@ const VideoLibraryPage: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div className={`bg-black/70 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full flex items-center gap-1.5 ${video.bg}`}>
-                {video.level}
-              </div>
             </div>
 
             {/* Progress Bar */}
@@ -425,7 +246,7 @@ const VideoLibraryPage: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <img 
-                        src={video.instructorAvatar} 
+                        src="https://rino.co.tz/favicon.png"
                         alt={video.instructor}
                         className="w-6 h-6 rounded-full object-cover"
                       />
@@ -773,12 +594,82 @@ const VideoLibraryPage: React.FC = () => {
               <button
                 onClick={() => {
                   setSearchTerm('');
-                  setSelectedGroup('all');
+                  setSelectedGroup('__all_videos__');
                 }}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform"
               >
                 <SparklesIcon className="h-5 w-5" />
                 Show All Videos
+              </button>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {pagination && pagination.last_page > 1 && (
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-600">
+                Showing {pagination.from} to {pagination.to} of {pagination.total} instructional videos
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => goToPage(pagination.current_page - 1)}
+                  disabled={pagination.current_page === 1}
+                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                
+                {/* Page Numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(5, pagination.last_page) }, (_, i) => {
+                    let pageNum;
+                    if (pagination.last_page <= 5) {
+                      pageNum = i + 1;
+                    } else if (pagination.current_page <= 3) {
+                      pageNum = i + 1;
+                    } else if (pagination.current_page >= pagination.last_page - 2) {
+                      pageNum = pagination.last_page - 4 + i;
+                    } else {
+                      pageNum = pagination.current_page - 2 + i;
+                    }
+                    
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => goToPage(pageNum)}
+                        className={`px-3 py-2 text-sm font-medium rounded-md ${
+                          pageNum === pagination.current_page
+                            ? 'bg-purple-600 text-white'
+                            : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => goToPage(pagination.current_page + 1)}
+                  disabled={pagination.current_page === pagination.last_page}
+                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Load More Button (Alternative to pagination) */}
+          {pagination && pagination.has_more_pages && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={loadMore}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
+              >
+                <PlayIcon className="h-5 w-5" />
+                Load More Videos
               </button>
             </div>
           )}
@@ -793,7 +684,7 @@ const VideoLibraryPage: React.FC = () => {
                 <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
                   Join thousands of users who have transformed their business with our comprehensive video tutorials.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center hidden">
                   <Link
                     to="/learning-path"
                     className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-xl"

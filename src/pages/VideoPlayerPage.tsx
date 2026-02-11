@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { useVideo } from '../hooks/useVideo';
 import { 
   PlayIcon, 
   PauseIcon, 
@@ -15,17 +16,6 @@ import {
   UsersIcon
 } from '@heroicons/react/24/outline';
 
-interface Video {
-  id: number;
-  title: string;
-  duration: string;
-  category: string;
-  thumbnail: string;
-  description: string;
-  icon: string;
-  views: string;
-  benefit?: string;
-}
 
 const VideoPlayerPage: React.FC = () => {
   const { videoId } = useParams<{ videoId: string }>();
@@ -36,242 +26,41 @@ const VideoPlayerPage: React.FC = () => {
   const [volume, setVolume] = useState(1);
   const [playbackRate, setPlaybackRate] = useState(1);
 
-  // Comprehensive video database with business function groups
-  const allVideos: Video[] = [
-    // Sales Management Group
-    { 
-      id: 1, 
-      title: 'Sales Pipeline Mastery', 
-      duration: '12 min', 
-      category: 'sales',
-      thumbnail: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=450&fit=crop',
-      description: 'Complete guide to building and managing high-converting sales pipelines',
-      icon: '�',
-      views: '15.2K',
-      benefit: 'Increase conversion rate by 35%'
-    },
-    { 
-      id: 2, 
-      title: 'Customer Relationship Excellence', 
-      duration: '8 min', 
-      category: 'sales',
-      thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=450&fit=crop',
-      description: 'Build lasting customer relationships that drive repeat business',
-      icon: '�',
-      views: '12.8K',
-      benefit: 'Boost retention by 50%'
-    },
-    { 
-      id: 3, 
-      title: 'Sales Team Performance', 
-      duration: '10 min', 
-      category: 'sales',
-      thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
-      description: 'Motivate and optimize your sales team for maximum results',
-      icon: '�',
-      views: '9.4K',
-      benefit: 'Improve team productivity by 40%'
-    },
-    { 
-      id: 4, 
-      title: 'Advanced Sales Analytics', 
-      duration: '15 min', 
-      category: 'sales',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Use data analytics to make smarter sales decisions',
-      icon: '�',
-      views: '7.6K',
-      benefit: 'Reduce sales cycle by 25%'
-    },
+  // Fetch video data from API
+  const { data, loading, error } = useVideo(parseInt(videoId || '1'));
+  
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading video...</p>
+        </div>
+      </div>
+    );
+  }
 
-    // Inventory Management Group
-    { 
-      id: 5, 
-      title: 'Inventory Control Systems', 
-      duration: '14 min', 
-      category: 'inventory',
-      thumbnail: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=450&fit=crop',
-      description: 'Implement robust inventory control systems for optimal stock levels',
-      icon: '📦',
-      views: '11.3K',
-      benefit: 'Reduce carrying costs by 30%'
-    },
-    { 
-      id: 6, 
-      title: 'Supply Chain Optimization', 
-      duration: '11 min', 
-      category: 'inventory',
-      thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=450&fit=crop',
-      description: 'Streamline your supply chain for efficiency and cost savings',
-      icon: '�',
-      views: '8.9K',
-      benefit: 'Cut supply chain costs by 25%'
-    },
-    { 
-      id: 7, 
-      title: 'Multi-location Inventory', 
-      duration: '9 min', 
-      category: 'inventory',
-      thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
-      description: 'Manage inventory across multiple locations seamlessly',
-      icon: '🏪',
-      views: '6.7K',
-      benefit: 'Improve accuracy by 45%'
-    },
-    { 
-      id: 8, 
-      title: 'Just-in-Time Inventory', 
-      duration: '7 min', 
-      category: 'inventory',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Implement JIT strategies to minimize waste and maximize efficiency',
-      icon: '⏰',
-      views: '5.4K',
-      benefit: 'Reduce waste by 60%'
-    },
+  // Show error state
+  if (error || !data.video) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-xl text-red-600 mb-4">Failed to load video</p>
+          <p className="text-gray-600">{error || 'Video not found'}</p>
+          <Link to="/videos" className="mt-4 inline-block text-blue-600 hover:text-blue-700">
+            ← Back to Video Library
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-    // Purchasing & Procurement Group
-    { 
-      id: 9, 
-      title: 'Strategic Procurement', 
-      duration: '13 min', 
-      category: 'purchasing',
-      thumbnail: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=450&fit=crop',
-      description: 'Develop strategic procurement processes that save money and time',
-      icon: '🛒',
-      views: '10.2K',
-      benefit: 'Save 20% on procurement costs'
-    },
-    { 
-      id: 10, 
-      title: 'Vendor Management Excellence', 
-      duration: '10 min', 
-      category: 'purchasing',
-      thumbnail: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=450&fit=crop',
-      description: 'Build and maintain profitable vendor relationships',
-      icon: '🤝',
-      views: '8.1K',
-      benefit: 'Improve vendor performance by 35%'
-    },
-    { 
-      id: 11, 
-      title: 'Purchase Order Automation', 
-      duration: '8 min', 
-      category: 'purchasing',
-      thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
-      description: 'Automate purchase orders for efficiency and accuracy',
-      icon: '📋',
-      views: '6.5K',
-      benefit: 'Reduce processing time by 70%'
-    },
-    { 
-      id: 12, 
-      title: 'Cost Analysis & Negotiation', 
-      duration: '12 min', 
-      category: 'purchasing',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Master cost analysis and negotiation techniques for better deals',
-      icon: '💼',
-      views: '7.8K',
-      benefit: 'Negotiate 15% better terms'
-    },
+  // Use API data
+  const currentVideo = data.video;
+  const relatedVideos = data.relatedVideos;
 
-    // Financial Management Group
-    { 
-      id: 13, 
-      title: 'Financial Dashboard Mastery', 
-      duration: '16 min', 
-      category: 'financial',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Create and utilize comprehensive financial dashboards',
-      icon: '💳',
-      views: '14.7K',
-      benefit: 'Improve financial visibility by 80%'
-    },
-    { 
-      id: 14, 
-      title: 'Cash Flow Optimization', 
-      duration: '11 min', 
-      category: 'financial',
-      thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
-      description: 'Strategies to optimize cash flow and improve financial health',
-      icon: '💵',
-      views: '11.9K',
-      benefit: 'Increase cash flow by 25%'
-    },
-    { 
-      id: 15, 
-      title: 'Budget Planning & Control', 
-      duration: '14 min', 
-      category: 'financial',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Master budget planning and control for business success',
-      icon: '📊',
-      views: '9.3K',
-      benefit: 'Reduce budget overruns by 40%'
-    },
-    { 
-      id: 16, 
-      title: 'Financial Reporting Excellence', 
-      duration: '9 min', 
-      category: 'financial',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Create professional financial reports that drive decisions',
-      icon: '�',
-      views: '7.1K',
-      benefit: 'Improve reporting accuracy by 50%'
-    },
-
-    // Operations Management Group
-    { 
-      id: 17, 
-      title: 'Business Process Optimization', 
-      duration: '15 min', 
-      category: 'operations',
-      thumbnail: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=450&fit=crop',
-      description: 'Streamline business processes for maximum efficiency',
-      icon: '⚙️',
-      views: '13.4K',
-      benefit: 'Save 15+ hours weekly'
-    },
-    { 
-      id: 18, 
-      title: 'Quality Control Systems', 
-      duration: '10 min', 
-      category: 'operations',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Implement effective quality control systems',
-      icon: '✅',
-      views: '8.7K',
-      benefit: 'Reduce defects by 55%'
-    },
-    { 
-      id: 19, 
-      title: 'Workflow Automation', 
-      duration: '12 min', 
-      category: 'operations',
-      thumbnail: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=450&fit=crop',
-      description: 'Automate workflows to increase productivity and reduce errors',
-      icon: '🤖',
-      views: '10.1K',
-      benefit: 'Automate 80% of routine tasks'
-    },
-    { 
-      id: 20, 
-      title: 'Performance Management', 
-      duration: '8 min', 
-      category: 'operations',
-      thumbnail: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop',
-      description: 'Implement performance management systems for continuous improvement',
-      icon: '🎯',
-      views: '6.9K',
-      benefit: 'Improve productivity by 45%'
-    }
-  ];
-
-  const currentVideo = allVideos.find(video => video.id === parseInt(videoId || '1')) || allVideos[0];
-  const relatedVideos = allVideos.filter(video => video.category === currentVideo.category && video.id !== currentVideo.id);
-
+  // Category names mapping
   const categoryNames: { [key: string]: string } = {
     'sales': 'Sales Management',
     'inventory': 'Inventory Management',
@@ -371,7 +160,7 @@ const VideoPlayerPage: React.FC = () => {
                 <div className="relative bg-black rounded-2xl overflow-hidden mb-6">
                   <div className="aspect-video flex items-center justify-center">
                     <img 
-                      src={currentVideo.thumbnail} 
+                      src={currentVideo.thumbnail || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop&auto=format`} 
                       alt={currentVideo.title}
                       className="w-full h-full object-cover"
                     />
@@ -489,7 +278,7 @@ const VideoPlayerPage: React.FC = () => {
                         </div>
                         <div className="flex items-center space-x-1">
                           <CheckCircleIcon className="h-4 w-4" />
-                          <span>{categoryNames[currentVideo.category]}</span>
+                          <span>{currentVideo.category?.name || 'Unknown Category'}</span>
                         </div>
                       </div>
                     </div>
@@ -527,7 +316,7 @@ const VideoPlayerPage: React.FC = () => {
               <div className="glass-card p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-gray-900">
-                    {categoryNames[currentVideo.category]}
+                    {currentVideo.category?.name || 'Related Videos'}
                   </h2>
                   <div className="flex items-center space-x-1 text-sm text-gray-500">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -564,7 +353,7 @@ const VideoPlayerPage: React.FC = () => {
                       <div className="flex space-x-3">
                         <div className="flex-shrink-0 w-20 h-14 bg-gray-200 rounded-lg overflow-hidden">
                           <img 
-                            src={video.thumbnail} 
+                            src={video.thumbnail || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop&auto=format`} 
                             alt={video.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
@@ -604,12 +393,12 @@ const VideoPlayerPage: React.FC = () => {
                   </h2>
                   <div className="flex items-center space-x-1 text-sm text-gray-500">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>{categoryDocuments[currentVideo.category]?.length || 0} files</span>
+                    <span>{categoryDocuments[currentVideo.category?.name || 'default']?.length || 0} files</span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  {categoryDocuments[currentVideo.category]?.map((doc, index) => (
+                  {categoryDocuments[currentVideo.category?.name || 'default']?.map((doc: any, index: number) => (
                     <div key={index} className="group p-3 bg-white/60 rounded-xl hover:bg-white/80 hover:shadow-sm transition-all cursor-pointer">
                       <div className="flex items-start space-x-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium ${
@@ -637,7 +426,7 @@ const VideoPlayerPage: React.FC = () => {
 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <button className="w-full py-2 px-4 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm hover:bg-primary-200 transition-colors">
-                    Download All Resources ({categoryDocuments[currentVideo.category]?.length || 0} files)
+                    Download All Resources ({categoryDocuments[currentVideo.category?.name || 'default']?.length || 0} files)
                   </button>
                 </div>
               </div>
@@ -652,10 +441,10 @@ const VideoPlayerPage: React.FC = () => {
           {/* Section Header */}
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Complete {categoryNames[currentVideo.category]} Learning Path
+              Complete {currentVideo.category?.name || 'this category'} Learning Path
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Master every aspect of {categoryNames[currentVideo.category].toLowerCase()} with our comprehensive resources, 
+              Master every aspect of {currentVideo.category?.name || 'this category'.toLowerCase()} with our comprehensive resources, 
               tools, and community support.
             </p>
           </div>
@@ -679,7 +468,7 @@ const VideoPlayerPage: React.FC = () => {
                     <p>
                       Welcome to this comprehensive guide on {currentVideo.title.toLowerCase()}. 
                       In this video, we'll explore the key strategies and techniques that will help you 
-                      achieve remarkable results with Rino's {categoryNames[currentVideo.category].toLowerCase()} features.
+                      achieve remarkable results with Rino's {currentVideo.category?.name || 'this category'.toLowerCase()} features.
                     </p>
                     <p>
                       {currentVideo.description} This approach has been tested and proven by thousands of 
@@ -833,7 +622,7 @@ const VideoPlayerPage: React.FC = () => {
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Explore Other Areas</h2>
                 <div className="space-y-2">
                   {Object.entries(categoryNames)
-                    .filter(([key]) => key !== currentVideo.category)
+                    .filter(([key]) => key !== currentVideo.category?.name)
                     .slice(0, 4)
                     .map(([key, name]) => (
                       <Link
