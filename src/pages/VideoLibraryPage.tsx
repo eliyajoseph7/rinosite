@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useVideos } from '../hooks/useVideos';
 import { useVideoStats } from '../hooks/useVideoStats';
 import { useVideoGroups } from '../hooks/useVideoGroups';
+import { VideoCardShimmer, ShimmerLoader } from '../components/ShimmerLoader';
 import { 
   PlayIcon, 
   MagnifyingGlassIcon, 
@@ -84,11 +85,11 @@ const VideoLibraryPage: React.FC = () => {
       id: '__all_videos__',
       name: 'All Videos',
       icon: SparklesIcon,
-      color: 'from-purple-500 to-pink-500',
-      gradient: 'bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500',
+      color: 'from-primary-500 to-primary-500',
+      gradient: 'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700',
       description: 'Complete collection of Rino app instructional videos',
       count: videos.length,
-      bg: 'bg-gradient-to-br from-purple-50 to-pink-50'
+      bg: 'bg-gradient-to-br from-primary-50 to-primary-50'
     },
     ...processedVideoGroups
   ], [videos.length, processedVideoGroups]);
@@ -102,27 +103,17 @@ const VideoLibraryPage: React.FC = () => {
   // Create learning stats from API data
   const learningStats = useMemo(() => videoStats ? [
     { value: videoStats.total_videos.toString(), label: 'Courses', icon: BookOpenIcon, color: 'text-purple-600', bg: 'bg-purple-100' },
-    { value: videoStats.total_views, label: 'Learners', icon: UsersIcon, color: 'text-pink-600', bg: 'bg-pink-100' },
+    { value: videoStats.total_views, label: 'Learners', icon: UsersIcon, color: 'text-primary-600', bg: 'bg-primary-100' },
     { value: videoStats.avg_rating.toString(), label: 'Avg Rating', icon: StarSolid, color: 'text-yellow-600', bg: 'bg-yellow-100' },
     { value: videoStats.satisfaction, label: 'Satisfaction', icon: HeartSolid, color: 'text-red-600', bg: 'bg-red-100' }
   ] : [], [videoStats]);
 
-  // Show loading state
-  if (groupsLoading || videosLoading || statsLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-purple-50/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Loading video library...</p>
-        </div>
-      </div>
-    );
-  }
+  // Loading states will be handled inline with shimmer loaders
 
   // Show error state
   if (groupsError || videosError || statsError) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-purple-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-green-50/20 flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-red-600 mb-4">Failed to load video library</p>
           <p className="text-gray-600">{groupsError || videosError || statsError}</p>
@@ -145,7 +136,8 @@ const VideoLibraryPage: React.FC = () => {
       large: 'h-72'
     };
 
-    const cardBg = categoryGroups.find(g => g.id === video.group)?.bg || 'bg-white';
+    // const cardBg = categoryGroups.find(g => g.id === video.group)?.bg || 'bg-white';
+    const cardBg = 'bg-white';
 
     return (
       <Link 
@@ -171,9 +163,9 @@ const VideoLibraryPage: React.FC = () => {
             {/* Animated Play Button */}
             <div className={`absolute inset-0 flex items-center justify-center transition-all duration-500 ${hoveredVideo === video.id ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-primary-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
                 <div className="relative bg-white/95 backdrop-blur-sm p-5 rounded-full shadow-2xl border border-white/20">
-                  <PlayIcon className="h-8 w-8 text-purple-600" />
+                  <PlayIcon className="h-8 w-8 text-green-600" />
                 </div>
               </div>
             </div>
@@ -225,13 +217,13 @@ const VideoLibraryPage: React.FC = () => {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center space-x-3 flex-1">
                 <div className="relative">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
-                  <div className="relative w-12 h-12 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center text-2xl shadow-lg">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-primary-500 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300 blur-sm"></div>
+                  <div className="relative w-12 h-12 bg-gradient-to-br from-green-100 to-primary-100 rounded-xl flex items-center justify-center text-2xl shadow-lg">
                     {video.icon}
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 text-lg line-clamp-1 group-hover:text-purple-700 transition-colors">
+                  <h3 className="font-bold text-gray-900 text-lg line-clamp-1 group-hover:text-primary-700 transition-colors">
                     {video.title}
                   </h3>
                   <div className="flex items-center space-x-3 mt-1">
@@ -265,7 +257,7 @@ const VideoLibraryPage: React.FC = () => {
               <div className="flex-1">
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-sky-500 to-primary-500 rounded-full transition-all duration-500"
                     style={{ width: `${video.progress}%` }}
                   ></div>
                 </div>
@@ -282,36 +274,31 @@ const VideoLibraryPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-purple-50/20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-green-50/20">
       {/* Scroll Progress Bar */}
 
       {/* Hero Section */}
-      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-24 pb-20">
-        {/* Animated Background */}
+      <section className="relative min-h-[60vh] flex items-center justify-center overflow-hidden pt-32 pb-20">
+        {/* Beautiful Advanced Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-white to-pink-50/40"></div>
+          {/* Base Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-green-50/40"></div>
           
           {/* Animated Mesh Gradient */}
           <div className="absolute inset-0 opacity-60">
-            <div 
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(45deg, rgba(147, 51, 234, 0.1) 0%, rgba(236, 72, 153, 0.15) 25%, rgba(139, 92, 246, 0.1) 50%, rgba(244, 114, 182, 0.15) 75%, rgba(168, 85, 247, 0.1) 100%)',
-                backgroundSize: '400% 400%',
-                animation: 'gradient-shift 15s ease infinite'
-              }}
-            ></div>
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-green-100/30 via-transparent to-emerald-100/20" style={{animation: 'gradient-shift 8s ease infinite'}}></div>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-emerald-100/20 via-transparent to-green-200/30" style={{animation: 'gradient-shift 12s ease infinite reverse'}}></div>
           </div>
           
           {/* Floating Orbs */}
-          <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-r from-purple-300/30 to-pink-300/20 rounded-full blur-3xl" style={{ animation: 'float 20s ease-in-out infinite' }}></div>
+          <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-r from-green-300/30 to-primary-300/20 rounded-full blur-3xl" style={{ animation: 'float 20s ease-in-out infinite' }}></div>
           <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-blue-300/10 to-cyan-300/10 rounded-full blur-3xl" style={{ animation: 'float 25s ease-in-out infinite reverse' }}></div>
           
           {/* Particles */}
           {[...Array(15)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-purple-400/30 rounded-full"
+              className="absolute w-1 h-1 bg-green-400/30 rounded-full"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -325,7 +312,7 @@ const VideoLibraryPage: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-5xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-purple-700 px-6 py-3 rounded-full text-sm font-bold mb-8 border border-purple-200">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-primary-700 px-6 py-3 rounded-full text-sm font-bold mb-8 border border-primary-500">
               <SparklesIcon className="h-4 w-4" />
               <span>Video Learning Center</span>
             </div>
@@ -340,24 +327,38 @@ const VideoLibraryPage: React.FC = () => {
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed mb-12">
               Transform your business with step-by-step video tutorials, real success stories, 
               and expert strategies from industry leaders.
-              <span className="font-semibold text-purple-700"> Learn at your own pace</span> and achieve remarkable results.
+              <span className="font-semibold text-primary-700"> Learn at your own pace</span> and achieve remarkable results.
             </p>
             
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
-              {learningStats.map((stat, idx) => (
-                <div key={idx} className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className={`${stat.bg} rounded-xl p-2`}>
-                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                      <div className="text-sm text-gray-600">{stat.label}</div>
+              {statsLoading ? (
+                [...Array(4)].map((_, idx) => (
+                  <div key={idx} className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <ShimmerLoader className="w-10 h-10 rounded-xl" />
+                      <div className="flex-1">
+                        <ShimmerLoader className="h-6 w-12 mb-2" />
+                        <ShimmerLoader className="h-4 w-16" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                learningStats.map((stat, idx) => (
+                  <div key={idx} className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className={`${stat.bg} rounded-xl p-2`}>
+                        <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                        <div className="text-sm text-gray-600">{stat.label}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -369,34 +370,44 @@ const VideoLibraryPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
             {/* Category Pills */}
             <div className="flex gap-3 overflow-x-auto pb-2 flex-1">
-              {categoryGroups.map((group) => {
-                const IconComponent = group.icon;
-                const isActive = selectedGroup === group.id;
-                return (
-                  <button
-                    key={group.id}
-                    onClick={() => setSelectedGroup(group.id)}
-                    className={`group relative flex items-center gap-3 px-6 py-3 rounded-2xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
-                      isActive 
-                        ? 'text-white shadow-xl scale-105' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-                    }`}
-                  >
-                    {isActive && (
-                      <div className={`absolute inset-0 ${group.gradient} rounded-2xl`}></div>
-                    )}
-                    <div className="relative z-10 flex items-center gap-3">
-                      <IconComponent className="h-5 w-5" />
-                      <span>{group.name}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                        isActive ? 'bg-white/20' : 'bg-gray-100'
-                      }`}>
-                        {group.count}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
+              {groupsLoading ? (
+                [...Array(5)].map((_, idx) => (
+                  <div key={idx} className="flex items-center gap-3 px-6 py-3 rounded-2xl">
+                    <ShimmerLoader className="w-5 h-5 rounded" />
+                    <ShimmerLoader className="h-4 w-20" />
+                    <ShimmerLoader className="w-8 h-6 rounded-full" />
+                  </div>
+                ))
+              ) : (
+                categoryGroups.map((group) => {
+                  const IconComponent = group.icon;
+                  const isActive = selectedGroup === group.id;
+                  return (
+                    <button
+                      key={group.id}
+                      onClick={() => setSelectedGroup(group.id)}
+                      className={`group relative flex items-center gap-3 px-6 py-3 rounded-2xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
+                        isActive 
+                          ? 'text-white shadow-xl scale-105 bg-gradient-to-r !from-primary-500 !via-primary-600 !to-primary-700' 
+                          : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      {isActive && (
+                        <div className={`absolute inset-0 ${group.gradient} rounded-2xl`}></div>
+                      )}
+                      <div className="relative z-10 flex items-center gap-3">
+                        <IconComponent className="h-5 w-5" />
+                        <span>{group.name}</span>
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                          isActive ? 'bg-white/20' : 'bg-gray-100'
+                        }`}>
+                          {group.count}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
             </div>
 
             {/* View Mode Toggle */}
@@ -411,7 +422,7 @@ const VideoLibraryPage: React.FC = () => {
                   onClick={() => setViewMode(mode)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
                     viewMode === mode 
-                      ? 'bg-white text-purple-600 shadow-sm' 
+                      ? 'bg-white text-primary-600 shadow-sm' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -432,7 +443,7 @@ const VideoLibraryPage: React.FC = () => {
             <div className="flex flex-col lg:flex-row gap-6 mb-8">
               {/* Enhanced Search Bar */}
               <div className="flex-1 relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl blur opacity-20"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-900 rounded-2xl blur opacity-20"></div>
                 <div className="relative bg-white rounded-2xl border border-gray-200 overflow-hidden">
                   <div className="flex items-center px-4">
                     <MagnifyingGlassIcon className="h-6 w-6 text-gray-400" />
@@ -480,7 +491,7 @@ const VideoLibraryPage: React.FC = () => {
                 {selectedGroup !== 'all' && (
                   <button
                     onClick={() => setSelectedGroup('all')}
-                    className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full text-sm font-medium hover:scale-105 transition-transform"
+                    className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-900 text-white rounded-full text-sm font-medium hover:scale-105 transition-transform"
                   >
                     {categoryGroups.find(g => g.id === selectedGroup)?.name}
                     <XMarkIcon className="h-4 w-4" />
@@ -511,7 +522,7 @@ const VideoLibraryPage: React.FC = () => {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 rounded-xl text-sm font-medium hover:bg-purple-100 transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-700 rounded-xl text-sm font-medium hover:bg-primary-100 transition-colors">
                 <LightBulbIcon className="h-4 w-4" />
                 Learning Path
               </button>
@@ -523,7 +534,59 @@ const VideoLibraryPage: React.FC = () => {
           </div>
 
           {/* Video Grid */}
-          {filteredVideos.length > 0 ? (
+          {videosLoading ? (
+            <div>
+              {/* Shimmer Loading for different view modes */}
+              {viewMode === 'masonry' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 auto-rows-auto">
+                  {[...Array(12)].map((_, idx) => (
+                    <VideoCardShimmer key={idx} />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'grid' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {[...Array(12)].map((_, idx) => (
+                    <VideoCardShimmer key={idx} />
+                  ))}
+                </div>
+              )}
+
+              {viewMode === 'spotlight' && (
+                <div className="space-y-12">
+                  {/* Main Featured Section Shimmer */}
+                  <div className="relative">
+                    <div className="absolute -inset-4 bg-gradient-to-r from-primary-100/30 to-primary-100/30 rounded-3xl blur-xl"></div>
+                    <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div>
+                        <VideoCardShimmer />
+                      </div>
+                      <div className="space-y-6">
+                        <ShimmerLoader className="h-8 w-32" />
+                        <ShimmerLoader className="h-4 w-full" />
+                        <ShimmerLoader className="h-4 w-3/4" />
+                        <div className="space-y-4">
+                          <VideoCardShimmer />
+                          <VideoCardShimmer />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* All Videos Grid Shimmer */}
+                  <div>
+                    <ShimmerLoader className="h-8 w-48 mb-6" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {[...Array(8)].map((_, idx) => (
+                        <VideoCardShimmer key={idx} />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : filteredVideos.length > 0 ? (
             <div>
               {/* Masonry View */}
               {viewMode === 'masonry' && (
@@ -550,7 +613,7 @@ const VideoLibraryPage: React.FC = () => {
                   {/* Main Featured Section */}
                   {featuredVideos[0] && (
                     <div className="relative">
-                      <div className="absolute -inset-4 bg-gradient-to-r from-purple-100/30 to-pink-100/30 rounded-3xl blur-xl"></div>
+                      <div className="absolute -inset-4 bg-gradient-to-r from-primary-100/30 to-primary-100/30 rounded-3xl blur-xl"></div>
                       <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div>
                           {renderVideoCard(featuredVideos[0], 'large')}
@@ -582,9 +645,9 @@ const VideoLibraryPage: React.FC = () => {
             // Empty State
             <div className="text-center py-20">
               <div className="relative inline-flex mb-6">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full blur-2xl opacity-20"></div>
-                <div className="relative w-24 h-24 bg-gradient-to-r from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
-                  <MagnifyingGlassIcon className="h-12 w-12 text-purple-600" />
+                <div className="absolute inset-0 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-900 rounded-full blur-2xl opacity-20"></div>
+                <div className="relative w-24 h-24 bg-gradient-to-r from-primary-100 to-primary-100 rounded-full flex items-center justify-center">
+                  <MagnifyingGlassIcon className="h-12 w-12 text-primary-600" />
                 </div>
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">No videos found</h3>
@@ -596,7 +659,7 @@ const VideoLibraryPage: React.FC = () => {
                   setSearchTerm('');
                   setSelectedGroup('__all_videos__');
                 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-900 text-white font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform"
               >
                 <SparklesIcon className="h-5 w-5" />
                 Show All Videos
@@ -640,7 +703,7 @@ const VideoLibraryPage: React.FC = () => {
                         onClick={() => goToPage(pageNum)}
                         className={`px-3 py-2 text-sm font-medium rounded-md ${
                           pageNum === pagination.current_page
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-primary-600 text-white'
                             : 'text-gray-500 bg-white border border-gray-300 hover:bg-gray-50'
                         }`}
                       >
@@ -666,7 +729,7 @@ const VideoLibraryPage: React.FC = () => {
             <div className="mt-8 text-center">
               <button
                 onClick={loadMore}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-900 text-white font-bold px-8 py-3 rounded-xl hover:scale-105 transition-transform shadow-lg"
               >
                 <PlayIcon className="h-5 w-5" />
                 Load More Videos
@@ -677,7 +740,7 @@ const VideoLibraryPage: React.FC = () => {
           {/* Learning Path CTA */}
           {filteredVideos.length > 0 && (
             <div className="mt-16 text-center">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-3xl p-8 max-w-3xl mx-auto border border-purple-100">
+              <div className="bg-gradient-to-r from-purple-50 to-primary-50 rounded-3xl p-8 max-w-3xl mx-auto border border-purple-100">
                 <h3 className="text-2xl font-bold text-gray-900 mb-3">
                   Ready to become a Rino expert?
                 </h3>
@@ -687,7 +750,7 @@ const VideoLibraryPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center hidden">
                   <Link
                     to="/learning-path"
-                    className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-xl"
+                    className="group inline-flex items-center gap-3 bg-gradient-to-r from-purple-600 to-primary-600 text-white font-bold px-8 py-4 rounded-xl hover:scale-105 transition-transform shadow-xl"
                   >
                     <AcademicCapIcon className="h-5 w-5" />
                     Start Learning Path

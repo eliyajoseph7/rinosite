@@ -29,28 +29,19 @@ import {
   CheckCircleIcon as CheckCircleSolid,
 } from '@heroicons/react/24/solid';
 import { useFeatureCategories } from '../hooks/useFeatureCategories';
+import { ShimmerLoader } from '../components/ShimmerLoader';
 
 const FeaturesPage: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [hoveredFeature, setHoveredFeature] = useState<string | null>(null);
   const { data: featureCategories, loading, error } = useFeatureCategories();
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Loading features...</p>
-        </div>
-      </div>
-    );
-  }
+  // Loading states will be handled inline with shimmer loaders
 
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20 flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-red-600 mb-4">Failed to load features</p>
           <p className="text-gray-600">{error}</p>
@@ -162,34 +153,74 @@ const FeaturesPage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20">
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes morphing-blob {
+          0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+          25% { transform: translate(30px, -50px) scale(1.1) rotate(90deg); }
+          50% { transform: translate(-20px, 20px) scale(0.9) rotate(180deg); }
+          75% { transform: translate(-30px, -30px) scale(1.05) rotate(270deg); }
+        }
+        @keyframes float-rotate {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(30px, -30px) rotate(90deg); }
+          50% { transform: translate(0, -60px) rotate(180deg); }
+          75% { transform: translate(-30px, -30px) rotate(270deg); }
+          100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        @keyframes bubble-float {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-20px) scale(1.1); }
+        }
+        .text-gradient {
+          background: linear-gradient(135deg, #14b8a6 0%, #0d9488 25%, #0f766e 50%, #115e59 75%, #134e4a 100%);
+          background-size: 400% 400%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: gradient-shift 8s ease infinite;
+        }
+      `}</style>
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-24 pb-20">
         {/* Animated Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50/40"></div>
+          {/* Base Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-primary-50/40"></div>
           
           {/* Animated Mesh Gradient */}
           <div className="absolute inset-0 opacity-60">
-            <div 
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.15) 25%, rgba(236, 72, 153, 0.1) 50%, rgba(6, 182, 212, 0.15) 75%, rgba(59, 130, 246, 0.1) 100%)',
-                backgroundSize: '400% 400%',
-                animation: 'gradient-shift 15s ease infinite'
-              }}
-            ></div>
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-100/30 via-transparent to-green-100/20" style={{animation: 'gradient-shift 8s ease infinite'}}></div>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-accent-100/20 via-transparent to-primary-200/30" style={{animation: 'gradient-shift 12s ease infinite reverse'}}></div>
           </div>
           
+          {/* Large Morphing Blobs */}
+          <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-gradient-to-r from-primary-200/30 to-primary-300/20 blur-3xl" style={{animation: 'morphing-blob 20s ease-in-out infinite'}}></div>
+          <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-gradient-to-l from-accent-200/25 to-primary-400/15 blur-3xl" style={{animation: 'morphing-blob 25s ease-in-out infinite reverse'}}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-accent-200/20 to-primary-200/15 blur-3xl" style={{animation: 'morphing-blob 15s ease-in-out infinite'}}></div>
+          
+          {/* Geometric Pattern Overlays */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `
+              radial-gradient(circle at 25% 25%, rgba(20, 184, 166, 0.4) 2px, transparent 2px),
+              radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px, 40px 40px'
+          }}></div>
+          
           {/* Floating Orbs */}
-          <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-r from-purple-300/30 to-pink-300/20 rounded-full blur-3xl" style={{ animation: 'float 20s ease-in-out infinite' }}></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-blue-300/10 to-cyan-300/10 rounded-full blur-3xl" style={{ animation: 'float 25s ease-in-out infinite reverse' }}></div>
+          <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-primary-300/40 to-primary-400/30 rounded-full blur-xl" style={{animation: 'float-rotate 18s linear infinite'}}></div>
+          <div className="absolute bottom-32 right-32 w-24 h-24 bg-gradient-to-l from-green-300/50 to-green-400/30 rounded-full blur-lg" style={{animation: 'float-rotate 14s linear infinite reverse'}}></div>
+          <div className="absolute top-1/3 right-20 w-16 h-16 bg-gradient-to-tr from-green-300/60 to-green-400/40 rounded-full blur-md" style={{animation: 'bubble-float 16s ease-in-out infinite'}}></div>
           
           {/* Particles */}
           {[...Array(12)].map((_, i) => (
             <div
               key={i}
-              className="absolute w-1 h-1 bg-blue-400/30 rounded-full"
+              className="absolute w-1 h-1 bg-primary-400/30 rounded-full"
               style={{
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
@@ -203,7 +234,7 @@ const FeaturesPage: React.FC = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-5xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-blue-700 px-6 py-3 rounded-full text-sm font-bold mb-8 border border-blue-200">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-primary-700 px-6 py-3 rounded-full text-sm font-bold mb-8 border border-primary-200">
               <SparklesIcon className="h-4 w-4" />
               <span>50+ Powerful Features • AI-Powered Intelligence</span>
             </div>
@@ -216,7 +247,7 @@ const FeaturesPage: React.FC = () => {
             
             {/* Subheadline */}
             <p className="text-xl text-gray-600 max-w-3xl mx-auto font-light leading-relaxed mb-12">
-              Discover how Rino's <span className="font-semibold text-blue-700">comprehensive feature suite</span> powered by 
+              Discover how Rino's <span className="font-semibold text-primary-700">comprehensive feature suite</span> powered by 
               artificial intelligence can revolutionize your operations and accelerate growth.
             </p>
             
@@ -227,8 +258,8 @@ const FeaturesPage: React.FC = () => {
                 return (
                   <div key={idx} className="bg-white/50 backdrop-blur-sm rounded-2xl p-4 border border-gray-100">
                     <div className="flex items-center gap-3">
-                      <div className="bg-gradient-to-br from-blue-100 to-cyan-100 rounded-xl p-2">
-                        <Icon className="h-6 w-6 text-blue-600" />
+                      <div className="bg-gradient-to-br from-primary-100 to-green-100 rounded-xl p-2">
+                        <Icon className="h-6 w-6 text-primary-600" />
                       </div>
                       <div>
                         <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
@@ -252,7 +283,7 @@ const FeaturesPage: React.FC = () => {
                 onClick={() => setActiveCategory('all')}
                 className={`px-6 py-3 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
                   activeCategory === 'all'
-                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                    ? 'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 text-white shadow-lg'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -264,7 +295,7 @@ const FeaturesPage: React.FC = () => {
                   onClick={() => setActiveCategory(category.id.toString())}
                   className={`flex items-center gap-3 px-6 py-3 rounded-xl font-medium text-sm whitespace-nowrap transition-all duration-300 ${
                     activeCategory === category.id.toString()
-                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                      ? 'bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'
                   }`}
                 >
@@ -304,30 +335,63 @@ const FeaturesPage: React.FC = () => {
           
           {/* Features List - Enhanced */}
           <div className="space-y-8">
-            {filteredCategories.map((category, categoryIndex) => {
-              return (
-                <div key={category.id} className="group/category">
-                  {/* Category Header with Gradient */}
+            {loading ? (
+              [...Array(3)].map((_, categoryIndex) => (
+                <div key={categoryIndex} className="group/category">
+                  {/* Category Header Shimmer */}
                   <div className="relative overflow-hidden">
-                    <div className={`absolute inset-0 bg-gradient-to-r ${category.color} opacity-5`}></div>
-                    <div className="relative px-6 py-4 border-l-4 border-blue-500">
+                    <div className="relative px-6 py-4 border-l-4 border-gray-200">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="text-xl font-bold text-gray-900 mb-1">
-                            {category.title}
-                          </h4>
-                          <p className="text-sm text-gray-600">{category.description}</p>
+                        <div className="flex-1">
+                          <ShimmerLoader className="h-6 w-48 mb-2" />
+                          <ShimmerLoader className="h-4 w-64" />
                         </div>
-                        <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-3 py-1 rounded-full">
-                          <span className="text-xs font-bold text-blue-700">{category.stats}</span>
-                        </div>
+                        <ShimmerLoader className="w-16 h-6 rounded-full" />
                       </div>
                     </div>
                   </div>
                   
-                  {/* Features Grid - Enhanced */}
+                  {/* Features Grid Shimmer */}
                   <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
-                    {category.features.map((feature, idx) => {
+                    {[...Array(4)].map((_, idx) => (
+                      <div key={idx} className="bg-white border border-gray-200 rounded-xl p-4">
+                        <div className="flex items-center gap-4">
+                          <ShimmerLoader className="w-12 h-12 rounded-xl" />
+                          <div className="flex-1">
+                            <ShimmerLoader className="h-5 w-32 mb-2" />
+                            <ShimmerLoader className="h-4 w-full" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              filteredCategories.map((category, categoryIndex) => {
+                return (
+                  <div key={category.id} className="group/category">
+                    {/* Category Header with Gradient */}
+                    <div className="relative overflow-hidden">
+                      <div className={`absolute inset-0 bg-gradient-to-r ${category.color} opacity-5`}></div>
+                      <div className="relative px-6 py-4 border-l-4 border-blue-500">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="text-xl font-bold text-gray-900 mb-1">
+                              {category.title}
+                            </h4>
+                            <p className="text-sm text-gray-600">{category.description}</p>
+                          </div>
+                          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 px-3 py-1 rounded-full">
+                            <span className="text-xs font-bold text-blue-700">{category.stats}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Features Grid - Enhanced */}
+                    <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-3">
+                      {category.features.map((feature, idx) => {
                       const FeatureIcon = feature.icon;
                       const uniqueId = `${categoryIndex}-${idx}`;
                       return (
@@ -391,12 +455,13 @@ const FeaturesPage: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </section>

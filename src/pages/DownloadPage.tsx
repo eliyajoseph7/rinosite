@@ -23,28 +23,19 @@ import {
   ComputerDesktopIcon as ComputerDesktopSolid
 } from '@heroicons/react/24/solid';
 import { useDownloadPlatforms } from '../hooks/useDownloadPlatforms';
+import { ShimmerLoader } from '../components/ShimmerLoader';
 
 const DownloadPage: React.FC = () => {
   const [activePlatform, setActivePlatform] = useState('all');
   const [hoveredPlatform, setHoveredPlatform] = useState<string | null>(null);
   const { data: downloadPlatforms, loading, error } = useDownloadPlatforms();
 
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Loading download options...</p>
-        </div>
-      </div>
-    );
-  }
+  // Loading states will be handled inline with shimmer loaders
 
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20 flex items-center justify-center">
         <div className="text-center">
           <p className="text-xl text-red-600 mb-4">Failed to load download options</p>
           <p className="text-gray-600">{error}</p>
@@ -166,42 +157,82 @@ const DownloadPage: React.FC = () => {
     : downloadOptions.filter(platform => platform.slug === activePlatform);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-blue-50/20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20">
+      <style>{`
+        @keyframes gradient-shift {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+        @keyframes morphing-blob {
+          0%, 100% { transform: translate(0, 0) scale(1) rotate(0deg); }
+          25% { transform: translate(30px, -50px) scale(1.1) rotate(90deg); }
+          50% { transform: translate(-20px, 20px) scale(0.9) rotate(180deg); }
+          75% { transform: translate(-30px, -30px) scale(1.05) rotate(270deg); }
+        }
+        @keyframes float-rotate {
+          0% { transform: translate(0, 0) rotate(0deg); }
+          25% { transform: translate(30px, -30px) rotate(90deg); }
+          50% { transform: translate(0, -60px) rotate(180deg); }
+          75% { transform: translate(-30px, -30px) rotate(270deg); }
+          100% { transform: translate(0, 0) rotate(360deg); }
+        }
+        @keyframes bubble-float {
+          0%, 100% { transform: translateY(0) scale(1); }
+          50% { transform: translateY(-20px) scale(1.1); }
+        }
+        .text-gradient {
+          background: linear-gradient(135deg, #14b8a6 0%, #0d9488 25%, #0f766e 50%, #115e59 75%, #134e4a 100%);
+          background-size: 400% 400%;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          animation: gradient-shift 8s ease infinite;
+        }
+      `}</style>
       {/* Hero Section */}
       <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-24 pb-20">
-        {/* Animated Background */}
+        {/* Beautiful Advanced Background */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-purple-50/40"></div>
+          {/* Base Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-primary-50/40"></div>
           
           {/* Animated Mesh Gradient */}
           <div className="absolute inset-0 opacity-60">
-            <div 
-              className="absolute inset-0"
-              style={{
-                background: 'linear-gradient(45deg, rgba(59, 130, 246, 0.1) 0%, rgba(139, 92, 246, 0.15) 25%, rgba(236, 72, 153, 0.1) 50%, rgba(6, 182, 212, 0.15) 75%, rgba(59, 130, 246, 0.1) 100%)',
-                backgroundSize: '400% 400%',
-                animation: 'gradient-shift 15s ease infinite'
-              }}
-            ></div>
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary-100/30 via-transparent to-accent-100/20" style={{animation: 'gradient-shift 8s ease infinite'}}></div>
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-accent-100/20 via-transparent to-primary-200/30" style={{animation: 'gradient-shift 12s ease infinite reverse'}}></div>
           </div>
           
-          {/* Floating Devices */}
-          <div className="absolute top-20 left-20 w-64 h-64 bg-gradient-to-r from-blue-300/30 to-cyan-300/20 rounded-full blur-3xl" style={{ animation: 'float 20s ease-in-out infinite' }}></div>
-          <div className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl" style={{ animation: 'float 25s ease-in-out infinite reverse' }}></div>
+          {/* Large Morphing Blobs */}
+          <div className="absolute -top-40 -left-40 w-[800px] h-[800px] bg-gradient-to-r from-primary-200/30 to-primary-300/20 blur-3xl" style={{animation: 'morphing-blob 20s ease-in-out infinite'}}></div>
+          <div className="absolute -bottom-40 -right-40 w-[900px] h-[900px] bg-gradient-to-l from-primary-200/25 to-primary-400/15 blur-3xl" style={{animation: 'morphing-blob 25s ease-in-out infinite reverse'}}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-primary-200/20 to-primary-200/15 blur-3xl" style={{animation: 'morphing-blob 15s ease-in-out infinite'}}></div>
+          
+          {/* Geometric Pattern Overlays */}
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `
+              radial-gradient(circle at 25% 25%, rgba(20, 184, 166, 0.4) 2px, transparent 2px),
+              radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.3) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px, 40px 40px'
+          }}></div>
+          
+          {/* Floating Orbs */}
+          <div className="absolute top-20 left-20 w-32 h-32 bg-gradient-to-r from-primary-300/40 to-primary-400/30 rounded-full blur-xl" style={{animation: 'float-rotate 18s linear infinite'}}></div>
+          <div className="absolute bottom-32 right-32 w-24 h-24 bg-gradient-to-l from-green-300/50 to-green-400/30 rounded-full blur-lg" style={{animation: 'float-rotate 14s linear infinite reverse'}}></div>
+          <div className="absolute top-1/3 right-20 w-16 h-16 bg-gradient-to-tr from-green-300/60 to-primary-300/40 rounded-full blur-md" style={{animation: 'bubble-float 16s ease-in-out infinite'}}></div>
           
           {/* Device Icons */}
           <div className="absolute top-1/4 left-1/4">
-            <DevicePhoneMobileSolid className="w-16 h-16 text-blue-500/20" />
+            <DevicePhoneMobileSolid className="w-16 h-16 text-primary-500/20" />
           </div>
           <div className="absolute bottom-1/3 right-1/4">
-            <ComputerDesktopSolid className="w-20 h-20 text-purple-500/20" />
+            <ComputerDesktopSolid className="w-20 h-20 text-accent-500/20" />
           </div>
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-5xl mx-auto">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-blue-700 px-6 py-3 rounded-full text-sm font-bold mb-8 border border-blue-200">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-primary-700 px-6 py-3 rounded-full text-sm font-bold mb-8 border border-primary-200">
               <SparklesIcon className="h-4 w-4" />
               <span>Available on All Platforms • 500K+ Downloads</span>
             </div>
@@ -303,7 +334,23 @@ const DownloadPage: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPlatforms.map((platform) => {
+            {loading ? (
+              [...Array(4)].map((_, idx) => (
+                <div key={idx} className="bg-white rounded-3xl p-6 border border-gray-200 shadow-xl h-full">
+                  <div className="flex justify-between items-start mb-6">
+                    <ShimmerLoader className="w-16 h-16 rounded-2xl" />
+                    <ShimmerLoader className="w-12 h-6 rounded-full" />
+                  </div>
+                  <ShimmerLoader className="h-6 w-3/4 mb-2" />
+                  <ShimmerLoader className="h-4 w-full mb-4" />
+                  <ShimmerLoader className="h-4 w-2/3 mb-6" />
+                  <div className="mt-auto">
+                    <ShimmerLoader className="h-12 w-full rounded-xl" />
+                  </div>
+                </div>
+              ))
+            ) : (
+              filteredPlatforms.map((platform) => {
               const Icon = platform.icon;
               return (
                 <div 
@@ -388,7 +435,8 @@ const DownloadPage: React.FC = () => {
                   </div>
                 </div>
               );
-            })}
+              })
+            )}
           </div>
         </div>
       </section>
@@ -681,7 +729,7 @@ const DownloadPage: React.FC = () => {
       {/* Final CTA */}
       <section className="relative py-20 overflow-hidden">
         {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-600 to-primary-700">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width=%2260%22%20height=%2260%22%20viewBox=%220%200%2060%2060%22%20xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg%20fill=%22none%22%20fill-rule=%22evenodd%22%3E%3Cg%20fill=%22%23ffffff%22%20fill-opacity=%220.05%22%3E%3Cpath%20d=%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
         </div>
 
@@ -733,6 +781,12 @@ const DownloadPage: React.FC = () => {
               })}
             </div>
           </div>
+        </div>
+        {/* Background elements */}
+        <div className="absolute top-0 left-0 w-full h-full">
+          <div className="absolute top-20 left-20 w-32 h-32 bg-white/10 rounded-full animate-pulse-slow"></div>
+          <div className="absolute bottom-20 right-20 w-24 h-24 bg-white/5 rounded-full animate-bounce-slow"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full animate-pulse-slow"></div>
         </div>
       </section>
     </div>

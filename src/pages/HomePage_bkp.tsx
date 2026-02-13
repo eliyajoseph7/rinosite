@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useHomepageData } from '../hooks/useHomepageData';
-import { ShimmerLoader } from '../components/ShimmerLoader';
 import { 
   ArrowTrendingUpIcon,
   ChartBarIcon,
@@ -21,9 +20,7 @@ import {
   CurrencyDollarIcon,
   ChartPieIcon,
   ArrowsPointingOutIcon,
-  ChatBubbleLeftRightIcon,
-  ArrowRightIcon,
-  LightBulbIcon
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { 
   ArrowTrendingUpIcon as ArrowTrendingUpSolid,
@@ -42,7 +39,17 @@ const HomePage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Loading states will be handled inline with shimmer loaders
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-primary-50/20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-xl text-gray-600">Loading amazing content...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show error state
   if (error) {
@@ -287,248 +294,101 @@ const HomePage: React.FC = () => {
 
             {/* Right Content - Interactive Dashboard Preview */}
             <div className={`relative transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-              {/* Revolutionary AI-Powered Business Hub */}
-              <div className="relative overflow-hidden">
-                {/* Dynamic Holographic Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-primary-50/80 via-white/90 to-accent-50/80 backdrop-blur-2xl rounded-3xl border border-primary-200/60">
-                  {/* Animated Circuit Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <svg className="w-full h-full" viewBox="0 0 400 300">
-                      <defs>
-                        <linearGradient id="circuit" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#14b8a6" />
-                          <stop offset="100%" stopColor="#0d9488" />
-                        </linearGradient>
-                      </defs>
-                      {/* Animated Circuit Lines */}
-                      <path d="M50,50 L150,50 L150,100 L250,100 L250,150 L350,150" stroke="url(#circuit)" strokeWidth="2" fill="none" className="animate-pulse" />
-                      <path d="M50,200 L100,200 L100,150 L200,150 L200,100 L300,100" stroke="url(#circuit)" strokeWidth="2" fill="none" className="animate-pulse" style={{animationDelay: '1s'}} />
-                      <path d="M100,250 L200,250 L200,200 L350,200" stroke="url(#circuit)" strokeWidth="2" fill="none" className="animate-pulse" style={{animationDelay: '2s'}} />
-                      {/* Circuit Nodes */}
-                      <circle cx="150" cy="50" r="4" fill="#14b8a6" className="animate-ping" />
-                      <circle cx="250" cy="100" r="4" fill="#0d9488" className="animate-ping" style={{animationDelay: '0.5s'}} />
-                      <circle cx="200" cy="150" r="4" fill="#14b8a6" className="animate-ping" style={{animationDelay: '1s'}} />
-                    </svg>
-                  </div>
-                </div>
+              {/* Dashboard Container */}
+              <div className="relative">
+                {/* Glass Effect Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-white/70 backdrop-blur-xl rounded-3xl border border-primary-200/50 shadow-xl"></div>
                 
-                {/* Main Content Container */}
-                <div className="relative p-8 lg:p-12">
-                  {/* Header - Real Business Success */}
-                  <div className="flex items-center justify-between mb-10">
-                    <div className="flex items-center gap-4">
-                      <div className="relative">
-                        <div className="w-12 h-12 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl flex items-center justify-center">
-                          <ShoppingCartIcon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse border-2 border-white"></div>
-                      </div>
-                      <div>
-                        <h3 className="text-3xl font-black bg-gradient-to-r from-primary-600 to-accent-600 bg-clip-text text-transparent">Your Business, Simplified</h3>
-                        <p className="text-gray-600 font-medium">Real results from real small businesses</p>
-                      </div>
+                {/* Dashboard Content */}
+                <div className="relative p-8">
+                  {/* Dashboard Header */}
+                  <div className="flex items-center justify-between mb-8">
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Rino Dashboard</h3>
+                      <p className="text-gray-600">Real-time business overview</p>
                     </div>
-                    <div className="flex items-center gap-3 bg-green-50 px-4 py-2 rounded-full border border-green-200">
+                    <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                      <span className="text-sm font-bold text-green-700">Live Success</span>
+                      <span className="text-sm text-gray-700 font-medium">Live</span>
                     </div>
                   </div>
 
-                  {/* Real Business Success Stories */}
-                  
-
-                  {/* 3D App Interface Showcase */}
-                  <div className="relative h-80 bg-gradient-to-br from-primary-50 via-white to-accent-50 rounded-2xl overflow-hidden border border-primary-200/50" style={{perspective: '1000px'}}>
-                    {/* 3D Scene Container */}
-                    <div className="relative w-full h-full" style={{transformStyle: 'preserve-3d'}}>
-                      
-                      {/* Background 3D Elements */}
-                      <div className="absolute inset-0">
-                        <div className="absolute top-16 left-16 w-20 h-20 bg-primary-400/20 rounded-full animate-pulse blur-sm" style={{transform: 'translateZ(-50px) rotateX(15deg)'}}></div>
-                        <div className="absolute bottom-16 right-16 w-16 h-16 bg-accent-400/25 rounded-full animate-pulse blur-sm" style={{transform: 'translateZ(-30px) rotateY(15deg)', animationDelay: '1s'}}></div>
-                      </div>
-
-                      {/* Main 3D Phone Device */}
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{transform: 'translate(-50%, -50%) rotateY(-15deg) rotateX(5deg) translateZ(0px)', transformStyle: 'preserve-3d'}}>
-                        
-                        {/* Phone Shadow */}
-                        <div className="absolute inset-0 bg-black/20 rounded-3xl blur-xl" style={{transform: 'translateZ(-20px) translateY(20px) scale(1.1)'}}></div>
-                        
-                        {/* Phone Body - 3D */}
-                        <div className="relative w-40 h-72 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl border-2 border-slate-300 shadow-2xl" style={{transform: 'translateZ(10px)', transformStyle: 'preserve-3d'}}>
-                          
-                          {/* Phone Side Edges */}
-                          <div className="absolute -left-1 top-0 w-1 h-full bg-gradient-to-b from-slate-300 to-slate-400 rounded-l-3xl" style={{transform: 'rotateY(-90deg) translateZ(0.5px)'}}></div>
-                          <div className="absolute -right-1 top-0 w-1 h-full bg-gradient-to-b from-slate-200 to-slate-300 rounded-r-3xl" style={{transform: 'rotateY(90deg) translateZ(0.5px)'}}></div>
-                          
-                          {/* Screen Container - 3D */}
-                          <div className="absolute top-6 left-3 right-3 bottom-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-inner" style={{transform: 'translateZ(2px)', transformStyle: 'preserve-3d'}}>
-                            
-                            {/* Status Bar */}
-                            <div className="absolute top-2 left-2 right-2 h-4 bg-slate-100 rounded flex items-center justify-between px-2">
-                              <div className="flex gap-1">
-                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                              </div>
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            </div>
-                            
-                            {/* App Header - 3D */}
-                            <div className="absolute top-8 left-2 right-2 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg shadow-lg flex items-center justify-center" style={{transform: 'translateZ(1px)'}}>
-                              <span className="text-white text-xs font-bold">Rino</span>
-                            </div>
-                            
-                            {/* Product Cards Grid - 3D Layered */}
-                            <div className="absolute top-20 left-2 right-2 grid grid-cols-2 gap-2">
-                              {/* Product 1 - 3D Card */}
-                              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 border border-yellow-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(3px) rotateX(2deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">👕</div>
-                                  <div className="text-xs font-semibold text-yellow-800">$25</div>
-                                  <div className="text-xs text-green-600 font-bold">✓ Sold</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-yellow-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                              
-                              {/* Product 2 - 3D Card */}
-                              <div className="bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(4px) rotateX(-2deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">👟</div>
-                                  <div className="text-xs font-semibold text-blue-800">$45</div>
-                                  <div className="text-xs text-green-600 font-bold">✓ Sold</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-blue-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                              
-                              {/* Product 3 - 3D Card */}
-                              <div className="bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(2px) rotateX(3deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">👜</div>
-                                  <div className="text-xs font-semibold text-purple-800">$35</div>
-                                  <div className="text-xs text-orange-600 font-bold">Pending</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-purple-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                              
-                              {/* Product 4 - 3D Card */}
-                              <div className="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(5px) rotateX(-1deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">⌚</div>
-                                  <div className="text-xs font-semibold text-green-800">$120</div>
-                                  <div className="text-xs text-green-600 font-bold">✓ Sold</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-green-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                            </div>
-                            
-                            {/* Sales Summary - 3D */}
-                            <div className="absolute bottom-16 left-2 right-2 bg-gradient-to-r from-green-100 to-green-200 border border-green-300 rounded-lg p-3 shadow-lg" style={{transform: 'translateZ(6px)', transformStyle: 'preserve-3d'}}>
-                              <div className="text-center">
-                                <div className="text-xs font-bold text-green-700">Today's Sales</div>
-                                <div className="text-lg font-black text-green-600">$225</div>
-                              </div>
-                              {/* Summary Shadow */}
-                              <div className="absolute inset-0 bg-green-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-2px) translateY(3px)'}}></div>
-                            </div>
-                            
-                            {/* Action Button - 3D */}
-                            <div className="absolute bottom-4 left-2 right-2 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105" style={{transform: 'translateZ(7px)', transformStyle: 'preserve-3d'}}>
-                              <div className="text-center text-white text-xs font-bold">Add New Item</div>
-                              {/* Button Shadow */}
-                              <div className="absolute inset-0 bg-primary-600/30 rounded-lg blur-sm" style={{transform: 'translateZ(-2px) translateY(4px)'}}></div>
-                            </div>
-                          </div>
+                  {/* Stats Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    {[
+                      { label: 'Business Growth', value: '40%', change: '+15%', color: 'text-green-400' },
+                      { label: 'Time Saved', value: '15+ hrs', change: '+25%', color: 'text-blue-400' },
+                      { label: 'Cost Reduction', value: '25%', change: '+8%', color: 'text-yellow-400' },
+                      { label: 'Customer Satisfaction', value: '95%', change: '+12%', color: 'text-primary-400' }
+                    ].map((stat, idx) => (
+                      <div key={idx} className="bg-white/90 rounded-xl p-4 backdrop-blur-sm border border-primary-200/50 shadow-sm">
+                        <p className="text-sm text-gray-600 mb-1">{stat.label}</p>
+                        <div className="flex items-end justify-between">
+                          <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                          <span className={`text-sm font-medium ${stat.color}`}>{stat.change}</span>
                         </div>
                       </div>
+                    ))}
+                  </div>
 
-                      {/* Floating 3D Success Elements */}
-                      <div className="absolute top-1/3 left-12 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg animate-bounce" style={{transform: 'translateZ(20px)', animationDuration: '3s'}}>
-                        ✓
-                        <div className="absolute inset-0 bg-green-600/40 rounded-full blur-md" style={{transform: 'translateZ(-5px) translateY(8px) scale(1.2)'}}></div>
-                      </div>
-                      
-                      <div className="absolute top-1/4 right-8 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg animate-bounce" style={{transform: 'translateZ(15px)', animationDuration: '2.5s', animationDelay: '0.5s'}}>
-                        $
-                        <div className="absolute inset-0 bg-yellow-600/40 rounded-full blur-md" style={{transform: 'translateZ(-5px) translateY(6px) scale(1.2)'}}></div>
-                      </div>
-
-                      {/* 3D Money Flow Animation */}
-                      <div className="absolute top-1/2 right-16 w-1 h-16 bg-gradient-to-b from-green-400 to-transparent animate-pulse" style={{transform: 'translateZ(10px) rotateZ(45deg)', animationDuration: '2s'}}>
-                        <div className="absolute top-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                      </div>
+                  {/* Activity Chart */}
+                  <div className="bg-white/90 rounded-xl p-4 backdrop-blur-sm border border-primary-200/50 shadow-sm mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-gray-900 font-semibold">Business Performance</h4>
+                      <span className="text-sm text-gray-600">Monthly Progress</span>
                     </div>
-
-                    {/* Overlay Stats */}
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-primary-200/50">
-                          <div className="text-lg font-black text-green-600">$225</div>
-                          <div className="text-xs text-gray-600">Today</div>
-                        </div>
-                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-primary-200/50">
-                          <div className="text-lg font-black text-blue-600">4</div>
-                          <div className="text-xs text-gray-600">Items Sold</div>
-                        </div>
-                        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 text-center border border-primary-200/50">
-                          <div className="text-lg font-black text-primary-600">2min</div>
-                          <div className="text-xs text-gray-600">Per Sale</div>
-                        </div>
-                      </div>
+                    <div className="h-32 flex items-end gap-1">
+                      {[40, 65, 75, 90, 85, 95, 100, 101, 110, 112].map((height, idx) => (
+                        <div
+                          key={idx}
+                          className="flex-1 bg-gradient-to-t from-primary-500 to-primary-600 rounded-t-lg transition-all duration-300 hover:opacity-80"
+                          style={{ height: `${height}%` }}
+                        ></div>
+                      ))}
                     </div>
                   </div>
 
-                  {/* Call-to-Action with Excitement */}
-                  <div className="text-center">
-                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-primary-500/25 cursor-pointer group">
-                      <RocketLaunchIcon className="w-6 h-6 group-hover:animate-bounce" />
-                      <span>Start Your Success Story</span>
-                      <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                    <p className="text-gray-600 mt-3 font-medium">Join 15,000+ small businesses already growing with Rino</p>
+                  {/* Quick Actions */}
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { icon: ShoppingCartIcon, label: 'New Sale', color: 'from-primary-500 to-primary-600' },
+                      { icon: UsersIcon, label: 'Add Client', color: 'from-blue-500 to-cyan-500' },
+                      { icon: ChartBarIcon, label: 'Report', color: 'from-green-500 to-emerald-500' }
+                    ].map((action, idx) => (
+                      <button
+                        key={idx}
+                        className="group bg-white/90 rounded-xl p-3 backdrop-blur-sm border border-primary-200/50 hover:bg-white transition-all duration-300 shadow-sm"
+                      >
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${action.color} flex items-center justify-center mb-2 mx-auto group-hover:scale-110 transition-transform`}>
+                          <action.icon className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="text-sm text-gray-700">{action.label}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Floating Achievement Badges */}
-                {/* <div className="absolute -top-6 -right-2 animate-float">
+                {/* Floating Elements */}
+                <div className="absolute -top-4 -right-4">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl blur-lg opacity-60 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl p-4 border-2 border-white shadow-xl">
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-primary-600 rounded-2xl blur-lg opacity-50 animate-pulse"></div>
+                    <div className="relative bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-3">
                       <div className="flex items-center gap-2">
-                        <StarIcon className="w-6 h-6 text-white" />
-                        <div className="text-white">
-                          <div className="text-sm font-black">AI Leader</div>
-                          <div className="text-xs opacity-90">2024 Award</div>
-                        </div>
+                        <SparklesIcon className="w-5 h-5 text-white" />
+                        <span className="text-sm font-bold text-white">Business Focused</span>
                       </div>
                     </div>
                   </div>
-                </div> */}
+                </div>
 
-                {/* <div className="absolute -bottom-6 -left-6 animate-float" style={{animationDelay: '1s'}}>
+                <div className="absolute -bottom-4 -left-4">
                   <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary-500 to-accent-500 rounded-2xl blur-lg opacity-60 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-r from-primary-600 to-accent-600 rounded-2xl p-4 border-2 border-white shadow-xl">
+                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl blur-lg opacity-50 animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                    <div className="relative bg-gradient-to-r from-green-600 to-emerald-600 rounded-2xl p-3">
                       <div className="flex items-center gap-2">
-                        <ShieldCheckIcon className="w-6 h-6 text-white" />
-                        <div className="text-white">
-                          <div className="text-sm font-black">Secure</div>
-                          <div className="text-xs opacity-90">Enterprise Grade</div>
-                        </div>
+                        <ShieldCheckIcon className="w-5 h-5 text-white" />
+                        <span className="text-sm font-bold text-white">Secure</span>
                       </div>
-                    </div>
-                  </div>
-                </div> */}
-
-                <div className="absolute top-1/2 -right-0 animate-float" style={{animationDelay: '2s'}}>
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-lg opacity-60 animate-pulse"></div>
-                    <div className="relative bg-gradient-to-r from-green-600 to-emerald-600 rounded-full p-3 border-2 border-white shadow-xl">
-                      <LightBulbIcon className="w-8 h-8 text-white" />
                     </div>
                   </div>
                 </div>
@@ -582,29 +442,18 @@ const HomePage: React.FC = () => {
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {loading ? (
-              [...Array(4)].map((_, index) => (
-                <div key={index} className="glass-card p-8 text-center">
-                  <ShimmerLoader className="w-16 h-16 rounded-2xl mx-auto mb-6" />
-                  <ShimmerLoader className="h-6 w-3/4 mx-auto mb-4" />
-                  <ShimmerLoader className="h-4 w-full mb-2" />
-                  <ShimmerLoader className="h-4 w-2/3 mx-auto" />
+            {features.map((feature, index) => (
+              <div key={index} className="glass-card p-8 text-center group animate-scaleIn" style={{animationDelay: `${index * 0.1}s`}}>
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200 ${feature.color} mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-glow`}>
+                  <feature.icon className="h-8 w-8 text-primary-700" />
                 </div>
-              ))
-            ) : (
-              features.map((feature, index) => (
-                <div key={index} className="glass-card p-8 text-center group animate-scaleIn" style={{animationDelay: `${index * 0.1}s`}}>
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-100 to-primary-200 ${feature.color} mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-glow`}>
-                    <feature.icon className="h-8 w-8 text-primary-700" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.description}</p>
-                  <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-12 h-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full mx-auto"></div>
-                  </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+                <div className="mt-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="w-12 h-1 bg-gradient-to-r from-primary-500 to-primary-600 rounded-full mx-auto"></div>
                 </div>
-              ))
-            )}
+              </div>
+            ))}
           </div>
         </div>
         {/* Background decorative elements */}

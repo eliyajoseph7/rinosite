@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useVideo } from '../hooks/useVideo';
+import { ShimmerLoader } from '../components/ShimmerLoader';
 import { 
   PlayIcon, 
   PauseIcon, 
@@ -19,30 +20,112 @@ import {
 
 const VideoPlayerPage: React.FC = () => {
   const { videoId } = useParams<{ videoId: string }>();
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const [duration] = useState(300); // Mock 5 minutes in seconds
+  const [duration, setDuration] = useState(0); // Will be set from video metadata
   const [volume, setVolume] = useState(1);
   const [playbackRate, setPlaybackRate] = useState(1);
 
   // Fetch video data from API
   const { data, loading, error } = useVideo(parseInt(videoId || '1'));
   
-  // Show loading state
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Loading video...</p>
-        </div>
-      </div>
-    );
-  }
+  // Loading states will be handled inline with shimmer loaders
 
-  // Show error state
-  if (error || !data.video) {
+  // Video event listeners
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Debug: Log the video URL
+    console.log('Video URL from API:', currentVideo?.video_url);
+    console.log('Fallback video URL:', "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+    console.log('Final video src:', currentVideo?.video_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4");
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+    };
+
+    const handleError = (e: Event) => {
+      console.error('Video error:', e);
+      const video = e.target as HTMLVideoElement;
+      console.error('Video error code:', video.error?.code);
+      console.error('Video error message:', video.error?.message);
+      console.error('Video URL:', video.src);
+      
+      // Try fallback video if current video fails
+      if (video.src.includes(currentVideo?.video_url || '')) {
+        console.log('Trying fallback video...');
+        video.src = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+        video.load();
+      }
+    };
+
+    const handleLoadStart = () => {
+      console.log('Video loading started');
+    };
+
+    const handleCanPlay = () => {
+      console.log('Video can play');
+    };
+
+    const handleLoadedData = () => {
+      console.log('Video data loaded');
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('play', handlePlay);
+    video.addEventListener('pause', handlePause);
+    video.addEventListener('error', handleError);
+    video.addEventListener('loadstart', handleLoadStart);
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('loadeddata', handleLoadedData);
+
+    return () => {
+      // Clean up event listeners
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('play', handlePlay);
+      video.removeEventListener('pause', handlePause);
+      video.removeEventListener('error', handleError);
+      video.removeEventListener('loadstart', handleLoadStart);
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('loadeddata', handleLoadedData);
+      
+      // Pause video and reset state on unmount
+      if (!video.paused) {
+        video.pause();
+      }
+      setIsPlaying(false);
+    };
+  }, []);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (videoRef.current && !videoRef.current.paused) {
+        videoRef.current.pause();
+      }
+      setIsPlaying(false);
+    };
+  }, []);
+
+  // Show error state only when not loading and there's an actual error
+  if (!loading && (error || !data?.video)) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -56,9 +139,9 @@ const VideoPlayerPage: React.FC = () => {
     );
   }
 
-  // Use API data
-  const currentVideo = data.video;
-  const relatedVideos = data.relatedVideos;
+  // Use API data with fallbacks for loading state
+  const currentVideo = data?.video || null;
+  const relatedVideos = data?.relatedVideos || [];
 
   // Category names mapping
   const categoryNames: { [key: string]: string } = {
@@ -109,31 +192,96 @@ const VideoPlayerPage: React.FC = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
+  const parseDurationString = (durationStr: string): number => {
+    if (!durationStr) return 0;
+    
+    // Remove "min" and spaces, then parse
+    const cleanStr = durationStr.replace(/min/g, '').trim();
+    
+    // Handle format like "13:12" (minutes:seconds)
+    if (cleanStr.includes(':')) {
+      const [minutes, seconds] = cleanStr.split(':').map(Number);
+      return (minutes * 60) + (seconds || 0);
+    }
+    
+    // Handle format like "5" (just minutes)
+    const minutes = parseInt(cleanStr);
+    return isNaN(minutes) ? 0 : minutes * 60;
+  };
+
+  const isYouTubeUrl = (url: string): boolean => {
+    return url.includes('youtube.com/watch') || url.includes('youtu.be/') || url.includes('youtube.com/embed/');
+  };
+
+  const extractYouTubeVideoId = (url: string): string | null => {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length === 11) ? match[7] : null;
+  };
+
+  const handlePlayPause = async () => {
+    if (videoRef.current) {
+      try {
+        if (isPlaying) {
+          videoRef.current.pause();
+          setIsPlaying(false);
+        } else {
+          await videoRef.current.play();
+          setIsPlaying(true);
+        }
+      } catch (error) {
+        // Handle AbortError and other play errors
+        if (error instanceof Error && error.name === 'AbortError') {
+          console.log('Play request was aborted - video may have been removed from DOM');
+          setIsPlaying(false);
+        } else {
+          console.error('Error playing video:', error);
+          setIsPlaying(false);
+        }
+      }
+    }
   };
 
   const handleMuteToggle = () => {
-    setIsMuted(!isMuted);
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
   };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
+    if (videoRef.current) {
+      videoRef.current.volume = newVolume;
+      videoRef.current.muted = newVolume === 0;
+    }
     setVolume(newVolume);
     setIsMuted(newVolume === 0);
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTime = parseFloat(e.target.value);
+    if (videoRef.current) {
+      videoRef.current.currentTime = newTime;
+    }
     setCurrentTime(newTime);
   };
 
   const skipBackward = () => {
-    setCurrentTime(Math.max(0, currentTime - 10));
+    const newTime = Math.max(0, currentTime - 10);
+    if (videoRef.current) {
+      videoRef.current.currentTime = newTime;
+    }
+    setCurrentTime(newTime);
   };
 
   const skipForward = () => {
-    setCurrentTime(Math.min(duration, currentTime + 10));
+    const maxDuration = duration || (currentVideo?.duration ? parseDurationString(currentVideo.duration) : 300);
+    const newTime = Math.min(maxDuration, currentTime + 10);
+    if (videoRef.current) {
+      videoRef.current.currentTime = newTime;
+    }
+    setCurrentTime(newTime);
   };
 
   return (
@@ -156,34 +304,92 @@ const VideoPlayerPage: React.FC = () => {
             {/* Main Video Player */}
             <div className="lg:col-span-2">
               <div className="glass-card p-6">
-                {/* Video Container */}
-                <div className="relative bg-black rounded-2xl overflow-hidden mb-6">
-                  <div className="aspect-video flex items-center justify-center">
-                    <img 
-                      src={currentVideo.thumbnail || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop&auto=format`} 
-                      alt={currentVideo.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {!isPlaying && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <button
-                          onClick={handlePlayPause}
-                          className="bg-white/90 backdrop-blur-sm p-6 rounded-full shadow-2xl hover:scale-110 transition-transform"
-                        >
-                          <PlayIcon className="h-12 w-12 text-primary-600" />
-                        </button>
+                {loading || !currentVideo ? (
+                  <div>
+                    {/* Video Player Shimmer */}
+                    <div className="relative bg-gray-200 rounded-2xl overflow-hidden mb-6">
+                      <div className="aspect-video flex items-center justify-center">
+                        <ShimmerLoader className="w-full h-full" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <ShimmerLoader className="w-20 h-20 rounded-full" />
+                        </div>
                       </div>
-                    )}
+                    </div>
+                    
+                    {/* Video Info Shimmer */}
+                    <div className="mb-6">
+                      <ShimmerLoader className="h-8 w-3/4 mb-3" />
+                      <ShimmerLoader className="h-4 w-full mb-2" />
+                      <ShimmerLoader className="h-4 w-2/3 mb-4" />
+                      
+                      <div className="flex items-center gap-4 mb-4">
+                        <ShimmerLoader className="h-4 w-20" />
+                        <ShimmerLoader className="h-4 w-16" />
+                        <ShimmerLoader className="h-4 w-24" />
+                      </div>
+                    </div>
+                    
+                    {/* Description Shimmer */}
+                    <div className="mb-6">
+                      <ShimmerLoader className="h-6 w-32 mb-3" />
+                      <ShimmerLoader className="h-4 w-full mb-2" />
+                      <ShimmerLoader className="h-4 w-full mb-2" />
+                      <ShimmerLoader className="h-4 w-3/4" />
+                    </div>
                   </div>
+                ) : (
+                  <div>
+                    {/* Video Container */}
+                    <div className="relative bg-black rounded-2xl overflow-hidden mb-6">
+                      <div className="aspect-video">
+                        {currentVideo?.video_url && isYouTubeUrl(currentVideo.video_url) ? (
+                          // YouTube Video Player
+                          <div className="relative w-full h-full">
+                            <iframe
+                              src={`https://www.youtube.com/embed/${extractYouTubeVideoId(currentVideo.video_url)}?rel=0&modestbranding=1&autohide=1&showinfo=0&controls=1`}
+                              className="w-full h-full rounded-2xl"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              title={currentVideo.title || 'Video Player'}
+                            />
+                          </div>
+                        ) : (
+                          // Regular HTML5 Video Player
+                          <>
+                            <video
+                              key={currentVideo?.video_url || 'fallback'}
+                              ref={videoRef}
+                              className="w-full h-full object-cover"
+                              poster={currentVideo?.thumbnail || `https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=800&h=500&fit=crop&auto=format`}
+                              preload="metadata"
+                              crossOrigin="anonymous"
+                            >
+                              <source src={currentVideo?.video_url || "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"} type="video/mp4" />
+                              Your browser does not support the video tag.
+                            </video>
+                            {!isPlaying && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <button
+                                  onClick={handlePlayPause}
+                                  className="bg-white/90 backdrop-blur-sm p-6 rounded-full shadow-2xl hover:scale-110 transition-transform"
+                                >
+                                  <PlayIcon className="h-12 w-12 text-primary-600" />
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
 
-                  {/* Video Controls */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+                  {/* Video Controls - Only for non-YouTube videos */}
+                  {!(currentVideo?.video_url && isYouTubeUrl(currentVideo.video_url)) && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <input
                         type="range"
                         min="0"
-                        max={duration}
+                        max={duration || (currentVideo?.duration ? parseDurationString(currentVideo.duration) : 300)}
                         value={currentTime}
                         onChange={handleSeek}
                         className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
@@ -245,7 +451,13 @@ const VideoPlayerPage: React.FC = () => {
                         </div>
                         <select
                           value={playbackRate}
-                          onChange={(e) => setPlaybackRate(parseFloat(e.target.value))}
+                          onChange={(e) => {
+                            const newRate = parseFloat(e.target.value);
+                            if (videoRef.current) {
+                              videoRef.current.playbackRate = newRate;
+                            }
+                            setPlaybackRate(newRate);
+                          }}
                           className="bg-white/20 backdrop-blur-sm text-white text-sm px-2 py-1 rounded border border-white/30"
                         >
                           <option value="0.5">0.5x</option>
@@ -257,37 +469,38 @@ const VideoPlayerPage: React.FC = () => {
                       </div>
                     </div>
                   </div>
+                  )}
                 </div>
 
                 {/* Video Info */}
                 <div className="mb-6">
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="w-12 h-12 bg-gradient-to-r from-primary-100 to-primary-200 rounded-xl flex items-center justify-center text-xl">
-                      {currentVideo.icon}
+                      {currentVideo?.icon}
                     </div>
                     <div>
-                      <h1 className="text-2xl font-bold text-gray-900 mb-1">{currentVideo.title}</h1>
+                      <h1 className="text-2xl font-bold text-gray-900 mb-1">{currentVideo?.title}</h1>
                       <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <div className="flex items-center space-x-1">
                           <ClockIcon className="h-4 w-4" />
-                          <span>{currentVideo.duration}</span>
+                          <span>{duration > 0 ? formatTime(duration) : (currentVideo?.duration ? parseDurationString(currentVideo.duration) > 0 ? formatTime(parseDurationString(currentVideo.duration)) : currentVideo.duration : '0:00')}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <EyeIcon className="h-4 w-4" />
-                          <span>{currentVideo.views} views</span>
+                          <span>{currentVideo?.views} views</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <CheckCircleIcon className="h-4 w-4" />
-                          <span>{currentVideo.category?.name || 'Unknown Category'}</span>
+                          <span>{currentVideo?.category?.name || 'Unknown Category'}</span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <p className="text-gray-600 leading-relaxed">{currentVideo.description}</p>
-                  {currentVideo.benefit && (
+                  <p className="text-gray-600 leading-relaxed">{currentVideo?.description}</p>
+                  {currentVideo?.benefit && (
                     <div className="mt-4 flex items-center space-x-2 text-green-600 font-medium">
                       <ArrowTrendingUpIcon className="h-4 w-4" />
-                      <span>{currentVideo.benefit}</span>
+                      <span>{currentVideo?.benefit}</span>
                     </div>
                   )}
                 </div>
@@ -307,6 +520,8 @@ const VideoPlayerPage: React.FC = () => {
                     Download Notes
                   </button>
                 </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -314,37 +529,73 @@ const VideoPlayerPage: React.FC = () => {
             <div className="lg:col-span-1 space-y-6">
               {/* Related Videos */}
               <div className="glass-card p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {currentVideo.category?.name || 'Related Videos'}
-                  </h2>
-                  <div className="flex items-center space-x-1 text-sm text-gray-500">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>{relatedVideos.length + 1} videos</span>
-                  </div>
-                </div>
-                
-                {/* Current Video Indicator */}
-                <div className="mb-4 p-3 bg-primary-50 rounded-xl border border-primary-200">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-lg">
-                      {currentVideo.icon}
+                {loading || !currentVideo ? (
+                  <div>
+                    {/* Sidebar Header Shimmer */}
+                    <div className="flex items-center justify-between mb-6">
+                      <ShimmerLoader className="h-6 w-32" />
+                      <ShimmerLoader className="h-4 w-16" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-primary-900 text-sm truncate">{currentVideo.title}</h3>
-                      <div className="flex items-center space-x-2 text-xs text-primary-700">
-                        <ClockIcon className="h-3 w-3" />
-                        <span>{currentVideo.duration}</span>
-                        <span>•</span>
-                        <span>Now Playing</span>
+                    
+                    {/* Current Video Shimmer */}
+                    <div className="mb-4 p-3 bg-gray-50 rounded-xl">
+                      <div className="flex items-center space-x-3">
+                        <ShimmerLoader className="w-12 h-12 rounded-lg" />
+                        <div className="flex-1">
+                          <ShimmerLoader className="h-4 w-3/4 mb-2" />
+                          <ShimmerLoader className="h-3 w-1/2" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
 
-                {/* Related Videos List */}
-                <div className="space-y-3">
-                  {relatedVideos.map((video) => (
+                    {/* Related Videos List Shimmer */}
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, idx) => (
+                        <div key={idx} className="p-3 bg-gray-50 rounded-xl">
+                          <div className="flex space-x-3">
+                            <ShimmerLoader className="w-20 h-14 rounded-lg" />
+                            <div className="flex-1">
+                              <ShimmerLoader className="h-4 w-full mb-2" />
+                              <ShimmerLoader className="h-3 w-2/3" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900">
+                        {currentVideo?.category?.name || 'Related Videos'}
+                      </h2>
+                      <div className="flex items-center space-x-1 text-sm text-gray-500">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span>{relatedVideos.length + 1} videos</span>
+                      </div>
+                    </div>
+                    
+                    {/* Current Video Indicator */}
+                    <div className="mb-4 p-3 bg-primary-50 rounded-xl border border-primary-200">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center text-lg">
+                          {currentVideo?.icon}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-primary-900 text-sm truncate">{currentVideo?.title}</h3>
+                          <div className="flex items-center space-x-2 text-xs text-primary-700">
+                            <ClockIcon className="h-3 w-3" />
+                            <span>{currentVideo?.duration}</span>
+                            <span>•</span>
+                            <span>Now Playing</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Related Videos List */}
+                    <div className="space-y-3">
+                      {relatedVideos.map((video) => (
                     <Link
                       key={video.id}
                       to={`/video/${video.id}`}
@@ -381,8 +632,10 @@ const VideoPlayerPage: React.FC = () => {
                         </div>
                       </div>
                     </Link>
-                  ))}
-                </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Documents & Resources */}
@@ -393,12 +646,12 @@ const VideoPlayerPage: React.FC = () => {
                   </h2>
                   <div className="flex items-center space-x-1 text-sm text-gray-500">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>{categoryDocuments[currentVideo.category?.name || 'default']?.length || 0} files</span>
+                    <span>{categoryDocuments[currentVideo?.category?.name || 'default']?.length || 0} files</span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
-                  {categoryDocuments[currentVideo.category?.name || 'default']?.map((doc: any, index: number) => (
+                  {categoryDocuments[currentVideo?.category?.name || 'default']?.map((doc: any, index: number) => (
                     <div key={index} className="group p-3 bg-white/60 rounded-xl hover:bg-white/80 hover:shadow-sm transition-all cursor-pointer">
                       <div className="flex items-start space-x-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium ${
@@ -426,7 +679,7 @@ const VideoPlayerPage: React.FC = () => {
 
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <button className="w-full py-2 px-4 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm hover:bg-primary-200 transition-colors">
-                    Download All Resources ({categoryDocuments[currentVideo.category?.name || 'default']?.length || 0} files)
+                    Download All Resources ({categoryDocuments[currentVideo?.category?.name || 'default']?.length || 0} files)
                   </button>
                 </div>
               </div>
@@ -438,210 +691,257 @@ const VideoPlayerPage: React.FC = () => {
       {/* Comprehensive Learning Section */}
       <section className="section-padding bg-white">
         <div className="container-custom">
-          {/* Section Header */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Complete {currentVideo.category?.name || 'this category'} Learning Path
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Master every aspect of {currentVideo.category?.name || 'this category'.toLowerCase()} with our comprehensive resources, 
-              tools, and community support.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content - Transcript & Key Takeaways */}
-            <div className="lg:col-span-2 space-y-8">
-              {/* Video Transcript */}
-              <div className="glass-card p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-gray-900">Video Transcript</h2>
-                  <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
-                    Download Transcript →
-                  </button>
-                </div>
-                <div className="prose prose-gray max-w-none">
-                  <div className="space-y-4 text-gray-600">
-                    <p className="text-lg font-semibold text-gray-900">
-                      Introduction to {currentVideo.title}
-                    </p>
-                    <p>
-                      Welcome to this comprehensive guide on {currentVideo.title.toLowerCase()}. 
-                      In this video, we'll explore the key strategies and techniques that will help you 
-                      achieve remarkable results with Rino's {currentVideo.category?.name || 'this category'.toLowerCase()} features.
-                    </p>
-                    <p>
-                      {currentVideo.description} This approach has been tested and proven by thousands of 
-                      businesses worldwide, with an average success rate that exceeds industry standards.
-                    </p>
-                    
-                    <div className="bg-primary-50 p-4 rounded-xl border border-primary-200 my-6">
-                      <h3 className="font-semibold text-primary-900 mb-3">Key Learning Points:</h3>
-                      <ul className="space-y-2 text-primary-800">
-                        <li className="flex items-start space-x-2">
-                          <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
-                          <span>Understanding core concepts and best practices</span>
-                        </li>
-                        <li className="flex items-start space-x-2">
-                          <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
-                          <span>Step-by-step implementation strategies</span>
-                        </li>
-                        <li className="flex items-start space-x-2">
-                          <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
-                          <span>Common pitfalls and how to avoid them</span>
-                        </li>
-                        <li className="flex items-start space-x-2">
-                          <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
-                          <span>Measuring success and ROI</span>
-                        </li>
-                      </ul>
+          {loading || !currentVideo ? (
+            <div>
+              {/* Section Header Shimmer */}
+              <div className="text-center mb-12">
+                <ShimmerLoader className="h-10 w-64 mx-auto mb-4" />
+                <ShimmerLoader className="h-6 w-96 mx-auto" />
+              </div>
+              
+              {/* Content Grid Shimmer */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                  <div className="glass-card p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <ShimmerLoader className="h-6 w-32" />
+                      <ShimmerLoader className="h-4 w-32" />
                     </div>
-
-                    <p>
-                      Throughout this demonstration, you'll see practical examples and real-world applications 
-                      that you can implement immediately in your own business context. We'll cover everything 
-                      from initial setup to advanced optimization techniques.
-                    </p>
-                    
-                    {currentVideo.benefit && (
-                      <div className="bg-green-50 p-4 rounded-xl border border-green-200 my-6">
-                        <h3 className="font-semibold text-green-900 mb-2 flex items-center space-x-2">
-                          <ArrowTrendingUpIcon className="h-5 w-5" />
-                          <span>Expected Business Impact</span>
-                        </h3>
-                        <p className="text-green-800 font-medium">{currentVideo.benefit}</p>
-                        <p className="text-green-700 text-sm mt-2">
-                          Based on data from 1,000+ businesses implementing these strategies
-                        </p>
-                      </div>
-                    )}
-
-                    <p className="text-lg font-semibold text-gray-900">
-                      Next Steps & Implementation
-                    </p>
-                    <p>
-                      Now that you understand the concepts, it's time to take action. Download the resources 
-                      provided in the sidebar, follow the implementation checklist, and join our community 
-                      to connect with other business owners on the same journey.
-                    </p>
+                    <div className="space-y-4">
+                      <ShimmerLoader className="h-6 w-3/4 mb-3" />
+                      <ShimmerLoader className="h-4 w-full mb-2" />
+                      <ShimmerLoader className="h-4 w-full mb-2" />
+                      <ShimmerLoader className="h-4 w-5/6" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <div className="glass-card p-6">
+                    <ShimmerLoader className="h-6 w-32 mb-6" />
+                    <div className="space-y-3">
+                      {[...Array(4)].map((_, idx) => (
+                        <div key={idx} className="flex items-center gap-3">
+                          <ShimmerLoader className="w-8 h-8 rounded-lg" />
+                          <div className="flex-1">
+                            <ShimmerLoader className="h-4 w-3/4 mb-2" />
+                            <ShimmerLoader className="h-3 w-1/2" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
+            </div>
+          ) : (
+            <div>
+              {/* Section Header */}
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                  Complete {currentVideo?.category?.name || 'this category'} Learning Path
+                </h2>
+                <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                  Master every aspect of {currentVideo?.category?.name || 'this category'.toLowerCase()} with our comprehensive resources, 
+                  tools, and community support.
+                </p>
+              </div>
 
-              {/* Implementation Steps */}
-              <div className="glass-card p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Implementation Roadmap</h2>
-                <div className="space-y-4">
-                  {[
-                    { step: 1, title: 'Assessment & Planning', description: 'Evaluate current processes and create implementation plan', duration: '1-2 days' },
-                    { step: 2, title: 'Setup & Configuration', description: 'Configure Rino settings and customize for your business', duration: '2-3 days' },
-                    { step: 3, title: 'Team Training', description: 'Train your team on new processes and tools', duration: '1 week' },
-                    { step: 4, title: 'Go Live & Monitor', description: 'Launch implementation and monitor key metrics', duration: '1-2 weeks' },
-                    { step: 5, title: 'Optimize & Scale', description: 'Refine processes and scale across organization', duration: 'Ongoing' }
-                  ].map((item) => (
-                    <div key={item.step} className="flex space-x-4 p-4 bg-gray-50 rounded-xl">
-                      <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                        {item.step}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Main Content - Transcript & Key Takeaways */}
+                <div className="lg:col-span-2 space-y-8">
+                  {/* Video Transcript */}
+                  <div className="glass-card p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-xl font-bold text-gray-900">Video Transcript</h2>
+                      <button className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                        Download Transcript →
+                      </button>
+                    </div>
+                    <div className="prose prose-gray max-w-none">
+                      <div className="space-y-4 text-gray-600">
+                        <p className="text-lg font-semibold text-gray-900">
+                          Introduction to {currentVideo?.title}
+                        </p>
+                        <p>
+                          Welcome to this comprehensive guide on {currentVideo?.title?.toLowerCase() || 'this topic'}. 
+                          In this video, we'll explore the key strategies and techniques that will help you 
+                          achieve remarkable results with Rino's {currentVideo?.category?.name || 'this category'.toLowerCase()} features.
+                        </p>
+                        <p>
+                          {currentVideo?.description} This approach has been tested and proven by thousands of 
+                          businesses worldwide, with an average success rate that exceeds industry standards.
+                        </p>
+                        
+                        <div className="bg-primary-50 p-4 rounded-xl border border-primary-200 my-6">
+                          <h3 className="font-semibold text-primary-900 mb-3">Key Learning Points:</h3>
+                          <ul className="space-y-2 text-primary-800">
+                            <li className="flex items-start space-x-2">
+                              <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
+                              <span>Understanding core concepts and best practices</span>
+                            </li>
+                            <li className="flex items-start space-x-2">
+                              <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
+                              <span>Step-by-step implementation strategies</span>
+                            </li>
+                            <li className="flex items-start space-x-2">
+                              <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
+                              <span>Common pitfalls and how to avoid them</span>
+                            </li>
+                            <li className="flex items-start space-x-2">
+                              <CheckCircleIcon className="h-5 w-5 text-primary-600 mt-0.5 flex-shrink-0" />
+                              <span>Measuring success and ROI</span>
+                            </li>
+                          </ul>
+                        </div>
+
+                        <p>
+                          Throughout this demonstration, you'll see practical examples and real-world applications 
+                          that you can implement immediately in your own business context. We'll cover everything 
+                          from initial setup to advanced optimization techniques.
+                        </p>
+                        
+                        {currentVideo?.benefit && (
+                          <div className="bg-green-50 p-4 rounded-xl border border-green-200 my-6">
+                            <h3 className="font-semibold text-green-900 mb-2 flex items-center space-x-2">
+                              <ArrowTrendingUpIcon className="h-5 w-5" />
+                              <span>Expected Business Impact</span>
+                            </h3>
+                            <p className="text-green-800 font-medium">{currentVideo?.benefit}</p>
+                            <p className="text-green-700 text-sm mt-2">
+                              Based on data from 1,000+ businesses implementing these strategies
+                            </p>
+                          </div>
+                        )}
+
+                        <p className="text-lg font-semibold text-gray-900">
+                          Next Steps & Implementation
+                        </p>
+                        <p>
+                          Now that you understand the concepts, it's time to take action. Download the resources 
+                          provided in the sidebar, follow the implementation checklist, and join our community 
+                          to connect with other business owners on the same journey.
+                        </p>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-                        <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
-                          <ClockIcon className="h-3 w-3" />
-                          <span>{item.duration}</span>
+                    </div>
+                  </div>
+
+                  {/* Implementation Steps */}
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">Implementation Roadmap</h2>
+                    <div className="space-y-4">
+                      {[
+                        { step: 1, title: 'Assessment & Planning', description: 'Evaluate current processes and create implementation plan', duration: '1-2 days' },
+                        { step: 2, title: 'Setup & Configuration', description: 'Configure Rino settings and customize for your business', duration: '2-3 days' },
+                        { step: 3, title: 'Team Training', description: 'Train your team on new processes and tools', duration: '1 week' },
+                        { step: 4, title: 'Go Live & Monitor', description: 'Launch implementation and monitor key metrics', duration: '1-2 weeks' },
+                        { step: 5, title: 'Optimize & Scale', description: 'Refine processes and scale across organization', duration: 'Ongoing' }
+                      ].map((item) => (
+                        <div key={item.step} className="flex space-x-4 p-4 bg-gray-50 rounded-xl">
+                          <div className="flex-shrink-0 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                            {item.step}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900">{item.title}</h3>
+                            <p className="text-sm text-gray-600 mt-1">{item.description}</p>
+                            <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
+                              <ClockIcon className="h-3 w-3" />
+                              <span>{item.duration}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sidebar - Additional Resources */}
+                <div className="space-y-8">
+                  {/* Quick Actions */}
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
+                    <div className="space-y-3">
+                      <button className="w-full py-3 px-4 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors">
+                        Start Implementation
+                      </button>
+                      <button className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        Schedule Consultation
+                      </button>
+                      <button className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                        Join Live Q&A Session
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Community & Support */}
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">Community & Support</h2>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <UsersIcon className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-sm">Active Community</h3>
+                          <p className="text-xs text-gray-600">10,000+ members online</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl">
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <CheckCircleIcon className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-sm">Expert Support</h3>
+                          <p className="text-xs text-gray-600">24/7 assistance available</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-xl">
+                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <ArrowTrendingUpIcon className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-sm">Success Stories</h3>
+                          <p className="text-xs text-gray-600">500+ case studies</p>
                         </div>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="mt-6 pt-6 border-t border-gray-200">
+                      <button className="w-full py-2 px-4 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm hover:bg-primary-200 transition-colors">
+                        Join Community Forum
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Related Categories */}
+                  <div className="glass-card p-6">
+                    <h2 className="text-xl font-bold text-gray-900 mb-6">Explore Other Areas</h2>
+                    <div className="space-y-2">
+                      {Object.entries(categoryNames)
+                        .filter(([key]) => key !== currentVideo?.category?.name)
+                        .slice(0, 4)
+                        .map(([key, name]) => (
+                          <Link
+                            key={key}
+                            to={`/videos`}
+                            className="flex items-center justify-between p-3 bg-white/60 rounded-xl hover:bg-white/80 transition-colors"
+                          >
+                            <span className="text-sm font-medium text-gray-900">{name}</span>
+                            <span className="text-xs text-gray-500">4 videos</span>
+                          </Link>
+                        ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-
-            {/* Sidebar - Additional Resources */}
-            <div className="space-y-8">
-              {/* Quick Actions */}
-              <div className="glass-card p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-                <div className="space-y-3">
-                  <button className="w-full py-3 px-4 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors">
-                    Start Implementation
-                  </button>
-                  <button className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                    Schedule Consultation
-                  </button>
-                  <button className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                    Join Live Q&A Session
-                  </button>
-                </div>
-              </div>
-
-              {/* Community & Support */}
-              <div className="glass-card p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Community & Support</h2>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-xl">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <UsersIcon className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Active Community</h3>
-                      <p className="text-xs text-gray-600">10,000+ members online</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-xl">
-                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                      <CheckCircleIcon className="h-5 w-5 text-green-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Expert Support</h3>
-                      <p className="text-xs text-gray-600">24/7 assistance available</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-3 p-3 bg-purple-50 rounded-xl">
-                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <ArrowTrendingUpIcon className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 text-sm">Success Stories</h3>
-                      <p className="text-xs text-gray-600">500+ case studies</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <button className="w-full py-2 px-4 bg-primary-100 text-primary-700 rounded-lg font-medium text-sm hover:bg-primary-200 transition-colors">
-                    Join Community Forum
-                  </button>
-                </div>
-              </div>
-
-              {/* Related Categories */}
-              <div className="glass-card p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">Explore Other Areas</h2>
-                <div className="space-y-2">
-                  {Object.entries(categoryNames)
-                    .filter(([key]) => key !== currentVideo.category?.name)
-                    .slice(0, 4)
-                    .map(([key, name]) => (
-                      <Link
-                        key={key}
-                        to={`/videos`}
-                        className="flex items-center justify-between p-3 bg-white/60 rounded-xl hover:bg-white/80 transition-colors"
-                      >
-                        <span className="text-sm font-medium text-gray-900">{name}</span>
-                        <span className="text-xs text-gray-500">4 videos</span>
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </div>
   );
-};
+}
+
 
 export default VideoPlayerPage;

@@ -7,7 +7,7 @@ const ScrollProgress: React.FC = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-[100] h-1 bg-gray-200/50">
       <div 
-        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-75 ease-linear"
+        className="h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-75 ease-linear"
         style={{ width: `${scrollProgress}%` }}
       />
       {/* Debug: Show scroll progress value */}
