@@ -337,131 +337,99 @@ const HomePage: React.FC = () => {
                   {/* Real Business Success Stories */}
                   
 
-                  {/* 3D App Interface Showcase */}
-                  <div className="relative h-80 bg-gradient-to-br from-primary-50 via-white to-accent-50 rounded-2xl overflow-hidden border border-primary-200/50" style={{perspective: '1000px'}}>
-                    {/* 3D Scene Container */}
-                    <div className="relative w-full h-full" style={{transformStyle: 'preserve-3d'}}>
+                  {/* App Interface Showcase */}
+                  <div className="relative h-80 bg-gradient-to-br from-primary-50 via-white to-accent-50 rounded-2xl overflow-hidden border border-primary-200/50">
+                    {/* SVG Illustration */}
+                    <svg className="w-full h-full" viewBox="0 0 400 320" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <linearGradient id="phoneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#f8fafc" />
+                          <stop offset="100%" stopColor="#e2e8f0" />
+                        </linearGradient>
+                        <linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#ffffff" />
+                          <stop offset="100%" stopColor="#f1f5f9" />
+                        </linearGradient>
+                        <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#14b8a6" />
+                          <stop offset="100%" stopColor="#0d9488" />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Background Elements */}
+                      <circle cx="80" cy="80" r="40" fill="#14b8a6" opacity="0.1" className="animate-pulse" />
+                      <circle cx="320" cy="240" r="30" fill="#0d9488" opacity="0.15" className="animate-pulse" style={{animationDelay: '1s'}} />
                       
-                      {/* Background 3D Elements */}
-                      <div className="absolute inset-0">
-                        <div className="absolute top-16 left-16 w-20 h-20 bg-primary-400/20 rounded-full animate-pulse blur-sm" style={{transform: 'translateZ(-50px) rotateX(15deg)'}}></div>
-                        <div className="absolute bottom-16 right-16 w-16 h-16 bg-accent-400/25 rounded-full animate-pulse blur-sm" style={{transform: 'translateZ(-30px) rotateY(15deg)', animationDelay: '1s'}}></div>
-                      </div>
-
-                      {/* Main 3D Phone Device */}
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" style={{transform: 'translate(-50%, -50%) rotateY(-15deg) rotateX(5deg) translateZ(0px)', transformStyle: 'preserve-3d'}}>
+                      {/* Phone Device */}
+                      <g transform="translate(120, 40)">
+                        {/* Phone Body */}
+                        <rect x="0" y="0" width="160" height="280" rx="25" fill="url(#phoneGradient)" stroke="#cbd5e1" strokeWidth="2" />
                         
-                        {/* Phone Shadow */}
-                        <div className="absolute inset-0 bg-black/20 rounded-3xl blur-xl" style={{transform: 'translateZ(-20px) translateY(20px) scale(1.1)'}}></div>
+                        {/* Screen */}
+                        <rect x="12" y="25" width="136" height="230" rx="15" fill="url(#screenGradient)" />
                         
-                        {/* Phone Body - 3D */}
-                        <div className="relative w-40 h-72 bg-gradient-to-br from-slate-100 to-slate-200 rounded-3xl border-2 border-slate-300 shadow-2xl" style={{transform: 'translateZ(10px)', transformStyle: 'preserve-3d'}}>
+                        {/* Status Bar */}
+                        <rect x="20" y="35" width="120" height="15" rx="3" fill="#f1f5f9" />
+                        <circle cx="130" cy="42" r="2" fill="#22c55e" />
+                        
+                        {/* App Header */}
+                        <rect x="20" y="60" width="120" height="30" rx="8" fill="#14b8a6" opacity="0.9" />
+                        <text x="80" y="78" textAnchor="middle" fill="white" fontSize="12" fontWeight="bold">Rino</text>
+                        
+                        {/* Product Cards */}
+                        <g>
+                          {/* Product 1 */}
+                          <rect x="25" y="100" width="50" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" strokeWidth="1" />
+                          <text x="50" y="115" textAnchor="middle" fontSize="8" fill="#92400e">👕</text>
+                          <text x="50" y="125" textAnchor="middle" fontSize="6" fill="#92400e">$25</text>
+                          <text x="50" y="135" textAnchor="middle" fontSize="5" fill="#059669">✓ Sold</text>
                           
-                          {/* Phone Side Edges */}
-                          <div className="absolute -left-1 top-0 w-1 h-full bg-gradient-to-b from-slate-300 to-slate-400 rounded-l-3xl" style={{transform: 'rotateY(-90deg) translateZ(0.5px)'}}></div>
-                          <div className="absolute -right-1 top-0 w-1 h-full bg-gradient-to-b from-slate-200 to-slate-300 rounded-r-3xl" style={{transform: 'rotateY(90deg) translateZ(0.5px)'}}></div>
+                          {/* Product 2 */}
+                          <rect x="85" y="100" width="50" height="40" rx="6" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+                          <text x="110" y="115" textAnchor="middle" fontSize="8" fill="#1e40af">👟</text>
+                          <text x="110" y="125" textAnchor="middle" fontSize="6" fill="#1e40af">$45</text>
+                          <text x="110" y="135" textAnchor="middle" fontSize="5" fill="#059669">✓ Sold</text>
                           
-                          {/* Screen Container - 3D */}
-                          <div className="absolute top-6 left-3 right-3 bottom-6 bg-gradient-to-br from-white to-slate-50 rounded-2xl shadow-inner" style={{transform: 'translateZ(2px)', transformStyle: 'preserve-3d'}}>
-                            
-                            {/* Status Bar */}
-                            <div className="absolute top-2 left-2 right-2 h-4 bg-slate-100 rounded flex items-center justify-between px-2">
-                              <div className="flex gap-1">
-                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                                <div className="w-1 h-1 bg-slate-400 rounded-full"></div>
-                              </div>
-                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                            </div>
-                            
-                            {/* App Header - 3D */}
-                            <div className="absolute top-8 left-2 right-2 h-8 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg shadow-lg flex items-center justify-center" style={{transform: 'translateZ(1px)'}}>
-                              <span className="text-white text-xs font-bold">Rino</span>
-                            </div>
-                            
-                            {/* Product Cards Grid - 3D Layered */}
-                            <div className="absolute top-20 left-2 right-2 grid grid-cols-2 gap-2">
-                              {/* Product 1 - 3D Card */}
-                              <div className="bg-gradient-to-br from-yellow-100 to-yellow-200 border border-yellow-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(3px) rotateX(2deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">👕</div>
-                                  <div className="text-xs font-semibold text-yellow-800">$25</div>
-                                  <div className="text-xs text-green-600 font-bold">✓ Sold</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-yellow-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                              
-                              {/* Product 2 - 3D Card */}
-                              <div className="bg-gradient-to-br from-blue-100 to-blue-200 border border-blue-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(4px) rotateX(-2deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">👟</div>
-                                  <div className="text-xs font-semibold text-blue-800">$45</div>
-                                  <div className="text-xs text-green-600 font-bold">✓ Sold</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-blue-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                              
-                              {/* Product 3 - 3D Card */}
-                              <div className="bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(2px) rotateX(3deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">👜</div>
-                                  <div className="text-xs font-semibold text-purple-800">$35</div>
-                                  <div className="text-xs text-orange-600 font-bold">Pending</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-purple-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                              
-                              {/* Product 4 - 3D Card */}
-                              <div className="bg-gradient-to-br from-green-100 to-green-200 border border-green-300 rounded-lg p-2 shadow-lg hover:shadow-xl transition-all duration-300" style={{transform: 'translateZ(5px) rotateX(-1deg)', transformStyle: 'preserve-3d'}}>
-                                <div className="text-center">
-                                  <div className="text-lg mb-1">⌚</div>
-                                  <div className="text-xs font-semibold text-green-800">$120</div>
-                                  <div className="text-xs text-green-600 font-bold">✓ Sold</div>
-                                </div>
-                                {/* Card Shadow */}
-                                <div className="absolute inset-0 bg-green-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-1px) translateY(2px)'}}></div>
-                              </div>
-                            </div>
-                            
-                            {/* Sales Summary - 3D */}
-                            <div className="absolute bottom-16 left-2 right-2 bg-gradient-to-r from-green-100 to-green-200 border border-green-300 rounded-lg p-3 shadow-lg" style={{transform: 'translateZ(6px)', transformStyle: 'preserve-3d'}}>
-                              <div className="text-center">
-                                <div className="text-xs font-bold text-green-700">Today's Sales</div>
-                                <div className="text-lg font-black text-green-600">$225</div>
-                              </div>
-                              {/* Summary Shadow */}
-                              <div className="absolute inset-0 bg-green-400/20 rounded-lg blur-sm" style={{transform: 'translateZ(-2px) translateY(3px)'}}></div>
-                            </div>
-                            
-                            {/* Action Button - 3D */}
-                            <div className="absolute bottom-4 left-2 right-2 bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg p-2 shadow-lg cursor-pointer hover:shadow-xl transition-all duration-300 hover:scale-105" style={{transform: 'translateZ(7px)', transformStyle: 'preserve-3d'}}>
-                              <div className="text-center text-white text-xs font-bold">Add New Item</div>
-                              {/* Button Shadow */}
-                              <div className="absolute inset-0 bg-primary-600/30 rounded-lg blur-sm" style={{transform: 'translateZ(-2px) translateY(4px)'}}></div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                          {/* Product 3 */}
+                          <rect x="25" y="150" width="50" height="40" rx="6" fill="#f3e8ff" stroke="#8b5cf6" strokeWidth="1" />
+                          <text x="50" y="165" textAnchor="middle" fontSize="8" fill="#6b21a8">👜</text>
+                          <text x="50" y="175" textAnchor="middle" fontSize="6" fill="#6b21a8">$35</text>
+                          <text x="50" y="185" textAnchor="middle" fontSize="5" fill="#f59e0b">Pending</text>
+                          
+                          {/* Product 4 */}
+                          <rect x="85" y="150" width="50" height="40" rx="6" fill="#ecfdf5" stroke="#10b981" strokeWidth="1" />
+                          <text x="110" y="165" textAnchor="middle" fontSize="8" fill="#047857">⌚</text>
+                          <text x="110" y="175" textAnchor="middle" fontSize="6" fill="#047857">$120</text>
+                          <text x="110" y="185" textAnchor="middle" fontSize="5" fill="#059669">✓ Sold</text>
+                        </g>
+                        
+                        {/* Sales Summary */}
+                        <rect x="20" y="200" width="120" height="40" rx="8" fill="#f0fdf4" stroke="#22c55e" strokeWidth="1" />
+                        <text x="80" y="215" textAnchor="middle" fontSize="10" fontWeight="bold" fill="#15803d">Today's Sales</text>
+                        <text x="80" y="230" textAnchor="middle" fontSize="12" fontWeight="bold" fill="#059669">$225</text>
+                        
+                        {/* Action Button */}
+                        <rect x="30" y="250" width="100" height="25" rx="12" fill="url(#buttonGradient)" />
+                        <text x="80" y="265" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">Add New Item</text>
+                      </g>
 
-                      {/* Floating 3D Success Elements */}
-                      <div className="absolute top-1/3 left-12 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg animate-bounce" style={{transform: 'translateZ(20px)', animationDuration: '3s'}}>
-                        ✓
-                        <div className="absolute inset-0 bg-green-600/40 rounded-full blur-md" style={{transform: 'translateZ(-5px) translateY(8px) scale(1.2)'}}></div>
-                      </div>
+                      {/* Floating Success Elements */}
+                      <g className="animate-bounce" style={{animationDuration: '3s'}}>
+                        <circle cx="60" cy="160" r="15" fill="#22c55e" opacity="0.9" />
+                        <text x="60" y="166" textAnchor="middle" fill="white" fontSize="12">✓</text>
+                      </g>
                       
-                      <div className="absolute top-1/4 right-8 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg animate-bounce" style={{transform: 'translateZ(15px)', animationDuration: '2.5s', animationDelay: '0.5s'}}>
-                        $
-                        <div className="absolute inset-0 bg-yellow-600/40 rounded-full blur-md" style={{transform: 'translateZ(-5px) translateY(6px) scale(1.2)'}}></div>
-                      </div>
+                      <g className="animate-bounce" style={{animationDuration: '2.5s', animationDelay: '0.5s'}}>
+                        <circle cx="340" cy="120" r="12" fill="#f59e0b" opacity="0.9" />
+                        <text x="340" y="125" textAnchor="middle" fill="white" fontSize="10">$</text>
+                      </g>
 
-                      {/* 3D Money Flow Animation */}
-                      <div className="absolute top-1/2 right-16 w-1 h-16 bg-gradient-to-b from-green-400 to-transparent animate-pulse" style={{transform: 'translateZ(10px) rotateZ(45deg)', animationDuration: '2s'}}>
-                        <div className="absolute top-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                      </div>
-                    </div>
+                      {/* Money Flow Animation */}
+                      <g className="animate-pulse" style={{animationDuration: '2s'}}>
+                        <path d="M280 160 Q320 140 340 120" stroke="#22c55e" strokeWidth="2" fill="none" strokeDasharray="5,5" />
+                        <circle cx="340" cy="120" r="3" fill="#22c55e" />
+                      </g>
+                    </svg>
 
                     {/* Overlay Stats */}
                     <div className="absolute bottom-4 left-4 right-4">
